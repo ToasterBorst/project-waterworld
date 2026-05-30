@@ -14,12 +14,9 @@ repositories {
 }
 
 loom {
-	splitEnvironmentSourceSets()
-
 	mods {
 		"project-waterworld" {
 			sourceSet sourceSets.main
-			sourceSet sourceSets.client
 		}
 	}
 }

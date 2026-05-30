@@ -9,7 +9,7 @@ Step-by-step guide to build, run, and verify the mod locally.
 
 ## 2. Build the mod
 
-From the repository root:
+From the repository root in PowerShell (prefix scripts with `.\`):
 
 ```powershell
 .\gradlew.bat build
@@ -85,6 +85,8 @@ Suggested seeds:
 |---------|-----|
 | IDE: cannot resolve `net.minecraft` | `genSources vscode` + Clean Java Language Server Workspace |
 | `release version 25 not supported` | Let Gradle use Foojay toolchain (`settings.gradle`) |
+| **Install fabric** on launch | Remove old jars from `run/mods/` (must match **26.1.2**); dev client only needs Loom + this mod |
+| Hang on **Preparing World for Creation** | Check `run/logs/latest.log` for registry errors (e.g. `preliminary_surface_level` missing in `noise_settings`) |
 | **Waterworld** missing in world types | Mod not loaded; check `latest.log` |
 | Wrong world shape | Recreate with **Waterworld** world type |
 | Version bump | [VERSIONS.md](VERSIONS.md) |
