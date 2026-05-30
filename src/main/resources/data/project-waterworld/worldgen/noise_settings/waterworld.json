@@ -1,5 +1,5 @@
 {
-  "sea_level": 126,
+  "sea_level": 112,
   "disable_mob_generation": false,
   "aquifers_enabled": true,
   "ore_veins_enabled": true,
@@ -88,8 +88,8 @@
               "type": "minecraft:mul",
               "argument1": {
                 "type": "minecraft:y_clamped_gradient",
-                "from_y": 100,
-                "to_y": 111,
+                "from_y": 104,
+                "to_y": 112,
                 "from_value": 1.0,
                 "to_value": 0.0
               },
@@ -129,6 +129,10 @@
     "final_density": {
       "type": "minecraft:min",
       "argument1": {
+        "type": "minecraft:min",
+        "argument1": {
+          "type": "minecraft:min",
+          "argument1": {
         "type": "minecraft:squeeze",
         "argument": {
           "type": "minecraft:mul",
@@ -159,8 +163,8 @@
                         "type": "minecraft:mul",
                         "argument1": {
                           "type": "minecraft:y_clamped_gradient",
-                          "from_y": 100,
-                          "to_y": 111,
+                          "from_y": 104,
+                          "to_y": 112,
                           "from_value": 1.0,
                           "to_value": 0.0
                         },
@@ -264,6 +268,22 @@
         }
       },
       "argument2": "minecraft:overworld/caves/noodle"
+        },
+        "argument2": {
+          "type": "minecraft:y_clamped_gradient",
+          "from_y": 42,
+          "to_y": 76,
+          "from_value": 64.0,
+          "to_value": -64.0
+        }
+      },
+      "argument2": {
+        "type": "minecraft:y_clamped_gradient",
+        "from_y": 108,
+        "to_y": 113,
+        "from_value": 8.0,
+        "to_value": -64.0
+      }
     },
     "vein_toggle": {
       "type": "minecraft:interpolated",
@@ -337,19 +357,10 @@
     {
       "temperature": [-1.0, 1.0],
       "humidity": [-1.0, 1.0],
-      "continentalness": [-0.11, 1.0],
+      "continentalness": [-1.05, 0.3],
       "erosion": [-1.0, 1.0],
-      "weirdness": [-1.0, -0.16],
-      "depth": 0.0,
-      "offset": 0.0
-    },
-    {
-      "temperature": [-1.0, 1.0],
-      "humidity": [-1.0, 1.0],
-      "continentalness": [-0.11, 1.0],
-      "erosion": [-1.0, 1.0],
-      "weirdness": [0.16, 1.0],
-      "depth": 0.0,
+      "weirdness": [-1.0, 1.0],
+      "depth": [-0.3, 0.1],
       "offset": 0.0
     }
   ],

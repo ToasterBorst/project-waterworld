@@ -3,16 +3,11 @@
 	"id": "project-waterworld",
 	"version": "${version}",
 	"name": "Project Waterworld",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "A flooded overworld with flat water at Y=112, natural seabed below, and vanilla biome distribution in the air column for building.",
 	"authors": [
-		"Me!"
+		"Project Waterworld"
 	],
-	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
-	},
 	"license": "CC0-1.0",
-	"icon": "assets/project-waterworld/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -23,12 +18,9 @@
 		"project-waterworld.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.16.14",
-		"minecraft": "~1.21.5",
-		"java": ">=21",
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~26.1.2",
+		"java": ">=25",
 		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
 	}
 }

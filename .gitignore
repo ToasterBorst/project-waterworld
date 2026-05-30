@@ -16,10 +16,10 @@ classes/
 *.ipr
 *.iws
 
-# vscode
+# vscode / eclipse (shared settings are committed; launch.json is machine-local)
 
 .settings/
-.vscode/
+.vscode/launch.json
 bin/
 .classpath
 .project

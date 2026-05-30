@@ -6,8 +6,14 @@
         "type": "minecraft:noise",
         "settings": "project-waterworld:waterworld",
         "biome_source": {
-          "type": "minecraft:multi_noise",
-          "biomes": [
+          "type": "project-waterworld:waterworld",
+          "land": {
+            "type": "minecraft:multi_noise",
+            "preset": "minecraft:overworld"
+          },
+          "underwater": {
+            "type": "minecraft:multi_noise",
+            "biomes": [
             {
               "biome": "minecraft:deep_lukewarm_ocean",
               "parameters": {
@@ -153,6 +159,7 @@
               }
             }
           ]
+          }
         }
       }
     },
