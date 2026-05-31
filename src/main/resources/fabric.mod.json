@@ -14,6 +14,7 @@
 			"waterworld.ProjectWaterworld"
 		]
 	},
+	"accessWidener": "project-waterworld.accesswidener",
 	"mixins": [
 		"project-waterworld.mixins.json"
 	],
