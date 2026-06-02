@@ -20,6 +20,7 @@ public class WaterworldBiomeSource extends BiomeSource {
 	).apply(instance, WaterworldBiomeSource::new));
 
 	private static final long MIN_INLAND_CONTINENTALNESS = Climate.quantizeCoord(-0.11f);
+	private static final int BIOME_FUZZ_BUFFER = 4;
 
 	private final MultiNoiseBiomeSource underwater;
 	private final MultiNoiseBiomeSource land;
@@ -45,7 +46,7 @@ public class WaterworldBiomeSource extends BiomeSource {
 	@Override
 	public Holder<Biome> getNoiseBiome(int quartX, int quartY, int quartZ, Climate.Sampler sampler) {
 		int blockY = quartToBlockY(quartY);
-		if (blockY > WaterworldConstants.SEA_LEVEL) {
+		if (blockY >= WaterworldConstants.SEA_LEVEL - BIOME_FUZZ_BUFFER) {
 			Climate.TargetPoint point = sampler.sample(quartX, quartY, quartZ);
 			return this.land.getNoiseBiome(clampToInland(point));
 		}

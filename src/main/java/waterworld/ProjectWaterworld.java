@@ -7,7 +7,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import waterworld.spawn.WaterworldSpawns;
 import waterworld.worldgen.WaterworldBiomeSources;
+
+import java.io.File;
 
 public class ProjectWaterworld implements ModInitializer {
 	public static final String MOD_ID = "project-waterworld";
@@ -17,7 +20,12 @@ public class ProjectWaterworld implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Initializing Project Waterworld");
 
+		File configFile = FabricLoader.getInstance().getConfigDir().resolve("project-waterworld.json").toFile();
+		WaterworldConfig.INSTANCE = WaterworldConfig.loadConfigFile(configFile);
+		LOGGER.info("Loaded Waterworld config");
+
 		WaterworldBiomeSources.register();
+		WaterworldSpawns.register();
 
 		try {
 			Identifier packId = Identifier.fromNamespaceAndPath(MOD_ID, "waterworld");

@@ -68,8 +68,198 @@ Suggested seeds:
 | Biomes at/below surface | F3 at Y≤112: oceans; caves deeper down |
 | Datapack active | `/datapack list` — `project-waterworld` enabled |
 | Mod loaded | `logs/latest.log` — `Initializing Project Waterworld` |
+| No floating structures | Fly around surface; no villages/outposts/igloos above water |
 
-## 7. Dedicated server (optional)
+## 7. Testing mob spawns
+
+All spawn features are controlled by `config/project-waterworld.json`. Delete the file to regenerate defaults.
+
+### Wild guardians
+
+Guardians should spawn naturally in ocean biomes at low frequency (weight 1, compared to squid at ~5).
+
+```
+/gamerule spawn_mobs true
+```
+
+Swim around in ocean biomes and watch for guardians spawning outside monuments. They should be infrequent. To verify spawn rates, use spectator mode and fly through ocean chunks:
+
+```
+/gamemode spectator
+```
+
+### Drowned riding guardians
+
+Wild guardians have a 15% chance of spawning with a drowned rider. The rider has a 25% chance of wielding a trident. Look for these while observing wild guardian spawns.
+
+### Drowned on land
+
+Drowned should no longer flee back to water. Find or spawn drowned near a shore and observe:
+
+```
+/summon minecraft:drowned ~ ~ ~
+```
+
+They should wander on land like regular zombies rather than retreating to water.
+
+### Armored illagers
+
+Illagers (pillagers, vindicators, evokers, witches) can spawn with iron/diamond armor during patrols and raids. Armor chance and tier scale with difficulty. To test:
+
+```
+/difficulty hard
+/raid ~ ~ ~
+```
+
+Inspect spawned raiders for armor pieces.
+
+### Boat dismounting
+
+Illagers, ravagers, wandering traders, and trader llamas will exit boats when on land. To test:
+
+```
+/summon minecraft:boat ~ ~ ~
+/summon minecraft:pillager ~ ~ ~
+```
+
+Push a pillager into a boat (or use the ride command), then move the boat to land. The mob should dismount.
+
+### Boat piloting
+
+Illagers, witches, and wandering traders can steer boats on water. To test:
+
+```
+/summon minecraft:boat ~ ~-1 ~
+/ride @e[type=minecraft:pillager,limit=1,sort=nearest] mount @e[type=minecraft:boat,limit=1,sort=nearest]
+```
+
+The mob should begin steering the boat toward random water destinations.
+
+### Ocean pillager patrols
+
+Pillager patrols spawn in boats on the ocean instead of on land. These follow vanilla patrol timing (after day 5). To fast-forward:
+
+```
+/time add 120000
+/gamerule spawn_patrols true
+```
+
+Wait for a patrol to spawn. They should appear in boats on the water.
+
+### Wandering trader boats
+
+Wandering traders spawn in a boat with one llama passenger instead of on land with two llamas. To force a trader spawn cycle, set the game time forward and wait:
+
+```
+/time add 48000
+```
+
+The trader should appear in a boat on the water surface.
+
+### Raid spawns in boats
+
+Trigger a raid near the ocean and observe. Raiders should spawn in boats over water, with ravagers in back seats and their jockey riders preserved:
+
+```
+/effect give @p minecraft:bad_omen 60 0
+```
+
+Then approach a populated area (or place a villager near water).
+
+### Bamboo as sticks in crafting
+
+Bamboo can substitute for sticks in any crafting recipe. To test:
+
+1. Obtain bamboo (Creative inventory or `/give @p minecraft:bamboo 64`)
+2. Open a crafting table and try crafting a wooden pickaxe using bamboo instead of sticks:
+   - Place planks across the top row, bamboo in the center and bottom-center slots
+3. The recipe should work identically to using sticks
+
+Verify with several recipe types:
+
+```
+/give @p minecraft:bamboo 64
+```
+
+- Tools: pickaxe, axe, sword, shovel, hoe (bamboo in stick slots)
+- Torch: bamboo below coal
+- Ladder: bamboo in stick slots
+- Bow/crossbow: bamboo in stick slots
+- Fishing rod: bamboo in stick slots
+
+Disable via config: set `bamboo_replaces_sticks` to `false` in `config/project-waterworld.json`.
+
+### Bamboo rafts for mobs
+
+All mob-spawned boats (patrols, raids, wandering traders) now use bamboo rafts instead of oak boats. To verify:
+
+1. Trigger a pillager patrol (see Ocean pillager patrols below) and confirm they spawn in bamboo rafts
+2. Trigger a wandering trader spawn and confirm it appears in a bamboo raft
+3. Trigger a raid over water and confirm raiders spawn in bamboo rafts
+
+The raft should visually be the bamboo raft model, not a regular wooden boat.
+
+### Boat AI: combat piloting
+
+Illagers (pillagers, vindicators, evokers, witches) now steer toward their attack targets and engage from boats. To test:
+
+```
+/summon minecraft:bamboo_raft ~ ~-1 ~
+/summon minecraft:pillager ~ ~ ~
+/ride @e[type=minecraft:pillager,limit=1,sort=nearest] mount @e[type=minecraft:bamboo_raft,limit=1,sort=nearest]
+```
+
+Stand at a distance and observe:
+- The pillager should steer the raft toward you
+- When within crossbow range (~15 blocks), it should load and fire its crossbow
+- The boat should actively move, not sit idle
+
+For melee mobs (vindicators):
+
+```
+/summon minecraft:bamboo_raft ~ ~-1 ~
+/summon minecraft:vindicator ~ ~ ~
+/ride @e[type=minecraft:vindicator,limit=1,sort=nearest] mount @e[type=minecraft:bamboo_raft,limit=1,sort=nearest]
+```
+
+The vindicator should steer toward you and attempt melee attacks at close range.
+
+### Boat AI: trader behavior
+
+Wandering traders now flee from threats and approach players while in boats. To test fleeing:
+
+```
+/summon minecraft:bamboo_raft ~ ~-1 ~
+/summon minecraft:wandering_trader ~ ~ ~
+/ride @e[type=minecraft:wandering_trader,limit=1,sort=nearest] mount @e[type=minecraft:bamboo_raft,limit=1,sort=nearest]
+/summon minecraft:zombie ~ ~-1 ~5
+```
+
+The trader should steer away from the zombie. To test player approach, remove threats and observe the trader steering toward you (stopping ~8 blocks away). When no player or threat is nearby, the trader wanders randomly.
+
+### Structure disabling
+
+Verify that land structures (pillager outposts, villages, igloos, desert pyramids, jungle temples, swamp huts, woodland mansions) do NOT generate. Use locate to confirm:
+
+```
+/locate structure minecraft:pillager_outpost
+/locate structure minecraft:village_plains
+/locate structure minecraft:igloo
+/locate structure minecraft:desert_pyramid
+/locate structure minecraft:jungle_pyramid
+/locate structure minecraft:swamp_hut
+/locate structure minecraft:mansion
+```
+
+These should all fail to find results. Ocean structures (monuments, shipwrecks, ruins) should still generate:
+
+```
+/locate structure minecraft:monument
+/locate structure minecraft:shipwreck
+/locate structure minecraft:ocean_ruin_warm
+```
+
+## 8. Dedicated server (optional)
 
 1. Fabric server for **26.1.2** with Loader **0.18.4+**
 2. Copy `build/libs/project-waterworld-1.0.0.jar` to `mods/`
@@ -79,7 +269,7 @@ Suggested seeds:
    level-type=project-waterworld:waterworld
    ```
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Problem | Fix |
 |---------|-----|

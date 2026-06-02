@@ -3,7 +3,16 @@
   "package": "waterworld.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "OceanMonumentTerrainMixin"
+    "OceanMonumentTerrainMixin",
+    "GuardianSpawnMixin",
+    "DrownedRiderMixin",
+    "DrownedLandMixin",
+    "PatrolSpawnerMixin",
+    "WanderingTraderMixin",
+    "RaidSpawnMixin",
+    "SpawnPointMixin",
+    "BambooStickIngredientMixin",
+    "BoatControlMixin"
   ],
   "client": [],
   "server": [],

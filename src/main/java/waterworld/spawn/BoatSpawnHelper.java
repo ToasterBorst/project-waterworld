@@ -1,0 +1,117 @@
+package waterworld.spawn;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.entity.monster.illager.Evoker;
+import net.minecraft.world.entity.monster.illager.Pillager;
+import net.minecraft.world.entity.monster.illager.Vindicator;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
+import waterworld.ai.BoatApproachPlayerGoal;
+import waterworld.ai.BoatCombatPilotGoal;
+import waterworld.ai.BoatFleeGoal;
+import waterworld.ai.DismountBoatGoal;
+import waterworld.ai.PilotBoatGoal;
+import waterworld.WaterworldConfig;
+
+import net.minecraft.world.entity.EntitySpawnReason;
+import org.jetbrains.annotations.Nullable;
+
+public final class BoatSpawnHelper {
+	private BoatSpawnHelper() {
+	}
+
+	@Nullable
+	public static BlockPos findWaterSurface(ServerLevel level, BlockPos center, int range) {
+		for (int attempt = 0; attempt < 10; attempt++) {
+			int dx = level.getRandom().nextInt(range * 2 + 1) - range;
+			int dz = level.getRandom().nextInt(range * 2 + 1) - range;
+			BlockPos columnPos = center.offset(dx, 0, dz);
+			BlockPos surfacePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, columnPos);
+
+			if (isWaterSurface(level, surfacePos.below())) {
+				return surfacePos.below();
+			}
+			if (isWaterSurface(level, surfacePos)) {
+				return surfacePos;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Returns true if the block at pos is a water source with air above.
+	 */
+	public static boolean isWaterSurface(ServerLevel level, BlockPos pos) {
+		BlockState state = level.getBlockState(pos);
+		BlockState above = level.getBlockState(pos.above());
+		return state.getFluidState().isSource() && above.isAir();
+	}
+
+	/**
+	 * Spawns a bamboo raft at the given water-surface position and returns it.
+	 */
+	@Nullable
+	public static AbstractBoat spawnBoatAt(ServerLevel level, double x, double y, double z) {
+		AbstractBoat boat = EntityType.BAMBOO_RAFT.create(level, EntitySpawnReason.MOB_SUMMONED);
+		if (boat == null) return null;
+		boat.setPos(x, y + 0.5, z);
+		boat.setYRot(level.getRandom().nextFloat() * 360.0f);
+		level.addFreshEntity(boat);
+		return boat;
+	}
+
+	/**
+	 * Creates a boat, mounts the mob as pilot (seat 0), and injects boat AI goals.
+	 */
+	public static void mountAsPilot(ServerLevel level, Mob mob) {
+		AbstractBoat boat = spawnBoatAt(level, mob.getX(), mob.getY(), mob.getZ());
+		if (boat == null) return;
+		mob.startRiding(boat);
+		addBoatAI(mob, true);
+	}
+
+	/**
+	 * Mounts the mob as a passenger (seat 1) in an existing boat.
+	 */
+	public static void mountAsPassenger(Mob mob, AbstractBoat boat) {
+		mob.startRiding(boat);
+		addBoatAI(mob, false);
+	}
+
+	/**
+	 * Adds boat AI goals to a mob, selecting role-specific goals based on type.
+	 *
+	 * @param canPilot if true, adds piloting goals (for illagers/traders);
+	 *                 if false, only adds DismountBoatGoal (for ravagers/llamas)
+	 */
+	public static void addBoatAI(Mob mob, boolean canPilot) {
+		WaterworldConfig config = WaterworldConfig.INSTANCE;
+		if (config.mobsCanExitBoats) {
+			mob.goalSelector.addGoal(1, new DismountBoatGoal(mob));
+		}
+		if (!canPilot || !config.mobsCanPilotBoats) return;
+
+		boolean isHostile = mob instanceof Pillager
+				|| mob instanceof Vindicator
+				|| mob instanceof Evoker
+				|| mob instanceof Witch;
+
+		if (isHostile) {
+			mob.goalSelector.addGoal(0, new BoatCombatPilotGoal(mob));
+			mob.goalSelector.addGoal(1, new PilotBoatGoal(mob));
+		} else if (mob instanceof WanderingTrader) {
+			mob.goalSelector.addGoal(0, new BoatFleeGoal(mob));
+			mob.goalSelector.addGoal(1, new BoatApproachPlayerGoal(mob));
+			mob.goalSelector.addGoal(2, new PilotBoatGoal(mob));
+		} else {
+			mob.goalSelector.addGoal(0, new PilotBoatGoal(mob));
+		}
+	}
+}

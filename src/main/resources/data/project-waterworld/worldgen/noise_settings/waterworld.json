@@ -45,17 +45,13 @@
       "y_scale": 1.0
     },
     "temperature": {
-      "type": "minecraft:add",
-      "argument1": 0.25,
-      "argument2": {
-        "type": "minecraft:shifted_noise",
-        "noise": "minecraft:temperature",
-        "xz_scale": 0.25,
-        "y_scale": 0.0,
-        "shift_x": "minecraft:shift_x",
-        "shift_y": 0.0,
-        "shift_z": "minecraft:shift_z"
-      }
+      "type": "minecraft:shifted_noise",
+      "noise": "minecraft:temperature",
+      "xz_scale": 0.25,
+      "y_scale": 0.0,
+      "shift_x": "minecraft:shift_x",
+      "shift_y": 0.0,
+      "shift_z": "minecraft:shift_z"
     },
     "vegetation": {
       "type": "minecraft:shifted_noise",
