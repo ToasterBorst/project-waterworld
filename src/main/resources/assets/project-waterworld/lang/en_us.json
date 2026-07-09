@@ -1,3 +1,5 @@
 {
-    "generator.project-waterworld.waterworld": "Waterworld"
-  }
+  "generator.project-waterworld.waterworld": "Waterworld",
+  "modmenu.summaryTranslation.project-waterworld": "A flooded overworld: endless ocean at Y=112 with vanilla surface biomes above the waves.",
+  "modmenu.descriptionTranslation.project-waterworld": "Project Waterworld turns the overworld into a flooded world with flat water at Y=112, a natural seabed below, and vanilla biome distribution in the air column for building. Ocean-adapted mobs and structures include wild guardian spawns, drowned riders, and pillager patrols and wandering traders in bamboo rafts. This mod is server-side only—clients do not need it installed to join."
+}

@@ -6,7 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.vehicle.boat.AbstractChestBoat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -41,7 +41,7 @@ public final class SpawnGearHandler {
 		double y = waterPos.getY() + 1.0;
 		double z = waterPos.getZ() + 0.5;
 
-		AbstractChestBoat raft = (AbstractChestBoat) EntityType.BAMBOO_CHEST_RAFT.create(level, EntitySpawnReason.MOB_SUMMONED);
+		AbstractChestBoat raft = (AbstractChestBoat) EntityTypes.BAMBOO_CHEST_RAFT.create(level, EntitySpawnReason.MOB_SUMMONED);
 		if (raft == null) {
 			ProjectWaterworld.LOGGER.warn("Failed to create bamboo chest raft for spawn gear");
 			return;

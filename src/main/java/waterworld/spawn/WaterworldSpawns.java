@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Ravager;
@@ -15,6 +15,7 @@ import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.monster.illager.Vindicator;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import net.minecraft.world.entity.animal.equine.TraderLlama;
+import net.minecraft.world.level.biome.Biomes;
 import waterworld.ProjectWaterworld;
 import waterworld.WaterworldConfig;
 
@@ -24,6 +25,7 @@ public final class WaterworldSpawns {
 
 	public static void register() {
 		registerGuardianSpawns();
+		registerTurtleSpawns();
 		registerEntityLoadEvents();
 		SpawnGearHandler.register();
 		ProjectWaterworld.LOGGER.info("Registered Waterworld spawn modifications");
@@ -36,8 +38,20 @@ public final class WaterworldSpawns {
 		BiomeModifications.addSpawn(
 			BiomeSelectors.tag(BiomeTags.IS_OCEAN),
 			MobCategory.MONSTER,
-			EntityType.GUARDIAN,
+			EntityTypes.GUARDIAN,
 			config.guardianSpawnWeight, 1, 1
+		);
+	}
+
+	private static void registerTurtleSpawns() {
+		WaterworldConfig config = WaterworldConfig.INSTANCE;
+		if (!config.turtleOceanSpawns) return;
+
+		BiomeModifications.addSpawn(
+			BiomeSelectors.includeByKey(Biomes.WARM_OCEAN, Biomes.LUKEWARM_OCEAN),
+			MobCategory.CREATURE,
+			EntityTypes.TURTLE,
+			config.turtleSpawnWeight, 2, 5
 		);
 	}
 

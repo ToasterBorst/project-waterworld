@@ -5,8 +5,12 @@
   "mixins": [
     "OceanMonumentTerrainMixin",
     "GuardianSpawnMixin",
+    "TurtleSpawnMixin",
+    "SpawnPlacementsMixin",
+    "NaturalSpawnerMixin",
     "DrownedRiderMixin",
     "DrownedLandMixin",
+    "DrownedEquipmentMixin",
     "PatrolSpawnerMixin",
     "WanderingTraderMixin",
     "RaidSpawnMixin",

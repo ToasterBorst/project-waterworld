@@ -3,7 +3,7 @@ package waterworld.mixin;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -35,12 +35,14 @@ public class DrownedRiderMixin {
 		if (!(levelAccessor.getLevel() instanceof ServerLevel level)) return;
 		if (level.getRandom().nextDouble() > WaterworldConfig.INSTANCE.drownedRiderChance) return;
 
-		Drowned drowned = EntityType.DROWNED.create(level, EntitySpawnReason.MOB_SUMMONED);
+		Drowned drowned = EntityTypes.DROWNED.create(level, EntitySpawnReason.MOB_SUMMONED);
 		if (drowned == null) return;
 
 		drowned.snapTo(guardian.getX(), guardian.getY(), guardian.getZ(), guardian.getYRot(), 0.0f);
 
-		if (level.getRandom().nextDouble() < WaterworldConfig.INSTANCE.tridentRiderChance) {
+		int minDays = WaterworldConfig.INSTANCE.tridentDrownedMinDays;
+		boolean worldOldEnough = minDays <= 0 || level.getGameTime() >= 24000L * minDays;
+		if (worldOldEnough && level.getRandom().nextDouble() < WaterworldConfig.INSTANCE.tridentRiderChance) {
 			drowned.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.TRIDENT));
 			drowned.setDropChance(EquipmentSlot.MAINHAND, 0.08f);
 		}

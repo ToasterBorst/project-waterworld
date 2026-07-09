@@ -2,18 +2,26 @@
 
 All game and toolchain versions are pinned in [`gradle.properties`](../gradle.properties). The repository and folder name should **not** include a Minecraft version; bump versions here and in `gradle.properties` when updating.
 
-## Current targets (26.1.2 line)
+## Current targets (26.2 — Chaos Cubed)
 
 | Component | Property | Value |
 |-----------|----------|--------|
-| Minecraft | `minecraft_version` | **26.1.2** |
-| Fabric Loader | `loader_version` | **0.18.4** |
-| Fabric API | `fabric_api_version` | **0.150.0+26.1.2** |
-| Fabric Loom | `loom_version` | **1.16-SNAPSHOT** |
-| Gradle | wrapper | **9.4.1** |
+| Minecraft | `minecraft_version` | **26.2** |
+| Fabric Loader | `loader_version` | **0.19.3** |
+| Fabric API | `fabric_api_version` | **0.153.0+26.2** |
+| Fabric Loom | `loom_version` | **1.17** |
+| Gradle | wrapper | **9.5.1** |
 | Java (compile) | toolchain | **25** |
 | Mod | `mod_version` | **1.0.0** |
 | Mod ID | `fabric.mod.json` → `id` | **project-waterworld** |
+
+## Optional compile-only dependencies
+
+These are declared in `build.gradle` for compile-time APIs only. They are **not** bundled and **not** required at runtime.
+
+| Dependency | Version | Scope | Runtime |
+|------------|---------|-------|---------|
+| [Mod Menu](https://modrinth.com/mod/modmenu) (`com.terraformersmc:modmenu`) | **20.0.0-beta.4** | `compileOnly` | Optional — install client-side for mod-list icon, metadata, and in-game config screen |
 
 ## How to update
 
@@ -31,4 +39,8 @@ All game and toolchain versions are pinned in [`gradle.properties`](../gradle.pr
 
 ## Datapack format
 
-[`pack.mcmeta`](../src/main/resources/pack.mcmeta) uses `min_format` / `max_format` `[84, 0]` for Minecraft 26.1.x. Adjust when Mojang changes pack format for a new release (see [datapack.wiki breaking changes](https://datapack.wiki/wiki/info/breaking-changes)).
+[`pack.mcmeta`](../src/main/resources/pack.mcmeta) uses `min_format` `[107, 1]` for Minecraft 26.2 and `max_format` `[200, 0]` to avoid future incompatibility warnings. Adjust `min_format` when Mojang changes pack format for a new release (see [datapack.wiki breaking changes](https://datapack.wiki/wiki/info/breaking-changes)).
+
+## Biome source architecture
+
+`WaterworldBiomeSource` wraps one overworld `MultiNoiseBiomeSource`, samples vanilla first, and substitutes only when the surface or underwater layer demands it (tag-driven). Mods that inject biomes into the vanilla parameter space work; mods that replace the biome source entirely are out of scope. See [`WaterworldBiomeSource.java`](../src/main/java/waterworld/worldgen/WaterworldBiomeSource.java) and [ARCHITECTURE.md](ARCHITECTURE.md#biome-selection).

@@ -2,7 +2,7 @@ package waterworld.spawn;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.block.Blocks;
@@ -17,7 +17,9 @@ import waterworld.ai.BoatApproachPlayerGoal;
 import waterworld.ai.BoatCombatPilotGoal;
 import waterworld.ai.BoatFleeGoal;
 import waterworld.ai.DismountBoatGoal;
+import waterworld.ai.MountNearbyBoatGoal;
 import waterworld.ai.PilotBoatGoal;
+import waterworld.ai.SwimToLandGoal;
 import waterworld.WaterworldConfig;
 
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -59,7 +61,7 @@ public final class BoatSpawnHelper {
 	 */
 	@Nullable
 	public static AbstractBoat spawnBoatAt(ServerLevel level, double x, double y, double z) {
-		AbstractBoat boat = EntityType.BAMBOO_RAFT.create(level, EntitySpawnReason.MOB_SUMMONED);
+		AbstractBoat boat = EntityTypes.BAMBOO_RAFT.create(level, EntitySpawnReason.MOB_SUMMONED);
 		if (boat == null) return null;
 		boat.setPos(x, y + 0.5, z);
 		boat.setYRot(level.getRandom().nextFloat() * 360.0f);
@@ -87,15 +89,23 @@ public final class BoatSpawnHelper {
 
 	/**
 	 * Adds boat AI goals to a mob, selecting role-specific goals based on type.
+	 * Skips addition if goals are already present (prevents accumulation from
+	 * repeated ENTITY_LOAD events).
 	 *
 	 * @param canPilot if true, adds piloting goals (for illagers/traders);
 	 *                 if false, only adds DismountBoatGoal (for ravagers/llamas)
 	 */
 	public static void addBoatAI(Mob mob, boolean canPilot) {
+		if (hasBoatGoals(mob)) return;
+
 		WaterworldConfig config = WaterworldConfig.INSTANCE;
 		if (config.mobsCanExitBoats) {
 			mob.goalSelector.addGoal(1, new DismountBoatGoal(mob));
 		}
+
+		mob.goalSelector.addGoal(2, new MountNearbyBoatGoal(mob));
+		mob.goalSelector.addGoal(3, new SwimToLandGoal(mob));
+
 		if (!canPilot || !config.mobsCanPilotBoats) return;
 
 		boolean isHostile = mob instanceof Pillager
@@ -113,5 +123,12 @@ public final class BoatSpawnHelper {
 		} else {
 			mob.goalSelector.addGoal(0, new PilotBoatGoal(mob));
 		}
+	}
+
+	private static boolean hasBoatGoals(Mob mob) {
+		return mob.goalSelector.getAvailableGoals().stream()
+				.anyMatch(wg -> wg.getGoal() instanceof DismountBoatGoal
+						|| wg.getGoal() instanceof PilotBoatGoal
+						|| wg.getGoal() instanceof MountNearbyBoatGoal);
 	}
 }

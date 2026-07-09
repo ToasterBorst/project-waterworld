@@ -1,7 +1,7 @@
 {
   "pack": {
     "description": "Project Waterworld resources",
-    "min_format": [84, 0],
-    "max_format": [84, 0]
+    "min_format": [107, 1],
+    "max_format": [200, 0]
   }
 }

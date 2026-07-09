@@ -29,7 +29,7 @@ If dependencies fail:
 .\run-client.bat
 ```
 
-Same as `.\gradlew.bat runClient`. First launch downloads Minecraft **26.1.2** and Fabric (several minutes). Versions come from [`gradle.properties`](../gradle.properties)—no separate Fabric installer needed for dev.
+Same as `.\gradlew.bat runClient`. First launch downloads Minecraft **26.2** and Fabric (several minutes). Versions come from [`gradle.properties`](../gradle.properties)—no separate Fabric installer needed for dev.
 
 ## 4. Fix IDE errors before editing Java
 
@@ -64,11 +64,17 @@ Suggested seeds:
 | Sea surface at Y=112 | Fly at Y=112; F3: water; no stone through surface |
 | Air above surface | Y=113–160: air only |
 | Seabed depth | Underwater: highest seabed roughly **Y=42–76** |
-| Biomes above water | F3 in air: vanilla overworld biomes by region |
-| Biomes at/below surface | F3 at Y≤112: oceans; caves deeper down |
+| Biomes above water | F3 in air (Y>112): vanilla overworld biomes; beaches, stony shores, rivers, mushroom fields where seed places them |
+| Biomes at surface fuzz | F3 at Y=108–111: surface-layer biomes (matches sky column, not underwater ocean) |
+| Biomes at/below surface | F3 at Y<108: oceans and caves; vanilla land columns → non-deep ocean |
+| Sea-level water appearance | Swim at Y=112: water tint/fog/sky match surface biome (not underwater ocean) |
 | Datapack active | `/datapack list` — `project-waterworld` enabled |
 | Mod loaded | `logs/latest.log` — `Initializing Project Waterworld` |
 | No floating structures | Fly around surface; no villages/outposts/igloos above water |
+| Buried treasure on ocean floor | See [Buried treasure / treasure maps](#buried-treasure--treasure-maps) |
+| Trail ruins disabled | See [Trail ruins](#trail-ruins) |
+| Sea turtles | See [Sea turtles](#sea-turtles) |
+| Mod Menu (optional) | See [Mod Menu client UI](#mod-menu-client-ui) |
 
 ## 7. Testing mob spawns
 
@@ -237,6 +243,76 @@ Wandering traders now flee from threats and approach players while in boats. To 
 
 The trader should steer away from the zombie. To test player approach, remove threats and observe the trader steering toward you (stopping ~8 blocks away). When no player or threat is nearby, the trader wanders randomly.
 
+### Buried treasure / treasure maps
+
+Buried treasure should generate on the ocean floor (not beach-gated). Treasure maps from shipwrecks and ocean ruins should point at diggable chests.
+
+```
+/locate structure minecraft:buried_treasure
+```
+
+Should succeed and lead to a chest on the seabed. Optional end-to-end check:
+
+1. Find a shipwreck map chest (`/locate structure minecraft:shipwreck`)
+2. Open the map; travel to the X and dig down through sand/gravel on the ocean floor
+3. Confirm a buried treasure chest with loot (including possible Heart of the Sea)
+
+### Trail ruins
+
+Trail ruins are disabled (gate biomes exist only in the air column).
+
+```
+/locate structure minecraft:trail_ruins
+```
+
+Should fail to find results.
+
+### Sea turtles
+
+Turtles should spawn naturally on sand in warm and lukewarm oceans. Egg-laying still requires player-placed sand above water.
+
+```
+/gamemode spectator
+```
+
+Swim through warm_ocean / lukewarm_ocean chunks with seabed sand and watch for turtles. Config: `turtle_ocean_spawns` (default true), `turtle_spawn_weight` (default 5).
+
+To verify placement on underwater sand (not only beaches):
+
+```
+/execute in minecraft:overworld run summon minecraft:turtle ~ ~ ~ {NoAI:1b}
+```
+
+Natural spawns should appear on ocean-floor sand without requiring surface beaches.
+
+### Vanilla coast biomes at surface layer
+
+With the same world seed, compare surface-layer biomes (F3 at Y≥108) against a vanilla overworld at the same (x, z):
+
+- Beaches, stony shores, rivers, and mushroom fields should appear where the vanilla seed places them
+- Genuine vanilla ocean columns at the surface layer should show climate-matched inland biomes instead
+
+Suggested workflow: note seed and coordinates in Waterworld, create a vanilla world with the same seed, `/tp` to the same x/z, compare F3 biome at Y=120.
+
+### Sea-level water color / fog
+
+At a location where the surface biome is non-ocean (e.g. beach or river mouth in the sky column):
+
+1. Swim at Y=112
+2. Observe water tint, fog, and sky color — they should match the **surface** biome, not the underwater ocean biome below
+
+This depends on the 4-block fuzz buffer (Y 108–111 treated as surface layer); see [ARCHITECTURE.md](ARCHITECTURE.md#fuzz-buffer-intentional--do-not-remove).
+
+### Mod Menu client UI
+
+Requires [Mod Menu](https://modrinth.com/mod/modmenu) installed in `run/mods/` (or your client `mods/` folder) **in addition to** this mod. The mod does not bundle Mod Menu.
+
+1. Launch client with both mods
+2. Mod list: **Project Waterworld** shows the mod icon, summary, description, and GitHub releases link
+3. Open config from the mod list — `WaterworldConfigScreen` should list all `WaterworldConfig` toggles and save changes to `config/project-waterworld.json`
+
+Server join still works without the client mod; Mod Menu is optional convenience only.
+
 ### Structure disabling
 
 Verify that land structures (pillager outposts, villages, igloos, desert pyramids, jungle temples, swamp huts, woodland mansions) do NOT generate. Use locate to confirm:
@@ -249,9 +325,10 @@ Verify that land structures (pillager outposts, villages, igloos, desert pyramid
 /locate structure minecraft:jungle_pyramid
 /locate structure minecraft:swamp_hut
 /locate structure minecraft:mansion
+/locate structure minecraft:trail_ruins
 ```
 
-These should all fail to find results. Ocean structures (monuments, shipwrecks, ruins) should still generate:
+Land structures should fail. `trail_ruins` is explicitly disabled. Ocean structures (monuments, shipwrecks, ruins) should still generate:
 
 ```
 /locate structure minecraft:monument
@@ -261,7 +338,7 @@ These should all fail to find results. Ocean structures (monuments, shipwrecks, 
 
 ## 8. Dedicated server (optional)
 
-1. Fabric server for **26.1.2** with Loader **0.18.4+**
+1. Fabric server for **26.2** with Loader **0.19.3+**
 2. Copy `build/libs/project-waterworld-1.0.0.jar` to `mods/`
 3. `server.properties`:
 
@@ -275,7 +352,7 @@ These should all fail to find results. Ocean structures (monuments, shipwrecks, 
 |---------|-----|
 | IDE: cannot resolve `net.minecraft` | `genSources vscode` + Clean Java Language Server Workspace |
 | `release version 25 not supported` | Let Gradle use Foojay toolchain (`settings.gradle`) |
-| **Install fabric** on launch | Remove old jars from `run/mods/` (must match **26.1.2**); dev client only needs Loom + this mod |
+| **Install fabric** on launch | Remove old jars from `run/mods/` (must match **26.2**); dev client only needs Loom + this mod |
 | Hang on **Preparing World for Creation** | Check `run/logs/latest.log` for registry errors (e.g. `preliminary_surface_level` missing in `noise_settings`) |
 | **Waterworld** missing in world types | Mod not loaded; check `latest.log` |
 | Wrong world shape | Recreate with **Waterworld** world type |

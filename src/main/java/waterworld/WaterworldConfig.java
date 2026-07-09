@@ -61,43 +61,13 @@ public class WaterworldConfig {
 	@SerializedName("ocean_pillager_patrols")
 	public boolean oceanPillagerPatrols = true;
 
-	@SerializedName("// --- Structure overrides (land structures disabled, future: custom replacements) ---")
+	@SerializedName("// Turtles spawn naturally in warm and lukewarm oceans")
+	public final String _comment_turtles = "(default: true)";
+	@SerializedName("turtle_ocean_spawns")
+	public boolean turtleOceanSpawns = true;
+
+	@SerializedName("// Land structures (villages, outposts, igloos, pyramids, temples, huts, mansions, trail ruins) are disabled by the built-in datapack and are not configurable here")
 	public final String _comment_structures = "";
-
-	@SerializedName("// Disable vanilla pillager outposts (currently replaced with empty set)")
-	public final String _comment_outpost = "(default: true)";
-	@SerializedName("disable_pillager_outposts")
-	public boolean disablePillagerOutposts = true;
-
-	@SerializedName("// Disable vanilla villages (currently replaced with empty set)")
-	public final String _comment_villages = "(default: true)";
-	@SerializedName("disable_villages")
-	public boolean disableVillages = true;
-
-	@SerializedName("// Disable vanilla igloos (currently replaced with empty set)")
-	public final String _comment_igloos = "(default: true)";
-	@SerializedName("disable_igloos")
-	public boolean disableIgloos = true;
-
-	@SerializedName("// Disable vanilla desert pyramids (currently replaced with empty set)")
-	public final String _comment_pyramids = "(default: true)";
-	@SerializedName("disable_desert_pyramids")
-	public boolean disableDesertPyramids = true;
-
-	@SerializedName("// Disable vanilla jungle temples (currently replaced with empty set)")
-	public final String _comment_temples = "(default: true)";
-	@SerializedName("disable_jungle_temples")
-	public boolean disableJungleTemples = true;
-
-	@SerializedName("// Disable vanilla swamp huts (currently replaced with empty set)")
-	public final String _comment_huts = "(default: true)";
-	@SerializedName("disable_swamp_huts")
-	public boolean disableSwampHuts = true;
-
-	@SerializedName("// Disable vanilla woodland mansions (currently replaced with empty set)")
-	public final String _comment_mansions = "(default: true)";
-	@SerializedName("disable_woodland_mansions")
-	public boolean disableWoodlandMansions = true;
 
 	@SerializedName("// --- Spawn options ---")
 	public final String _comment_spawn_options = "";
@@ -125,6 +95,11 @@ public class WaterworldConfig {
 	@SerializedName("guardian_spawn_weight")
 	public int guardianSpawnWeight = 1;
 
+	@SerializedName("// Spawn weight for ocean turtles")
+	public final String _comment_tw = "(default: 5)";
+	@SerializedName("turtle_spawn_weight")
+	public int turtleSpawnWeight = 5;
+
 	@SerializedName("// Chance a spawn attempt succeeds (0.0-1.0, lower = rarer guardians)")
 	public final String _comment_gsc = "(default: 0.05)";
 	@SerializedName("guardian_spawn_chance")
@@ -149,6 +124,11 @@ public class WaterworldConfig {
 	public final String _comment_asd = "(default: true)";
 	@SerializedName("armor_scales_with_difficulty")
 	public boolean armorScalesWithDifficulty = true;
+
+	@SerializedName("// Minimum world age in days before drowned can spawn with tridents (0 = no restriction)")
+	public final String _comment_tmd = "(default: 10)";
+	@SerializedName("trident_drowned_min_days")
+	public int tridentDrownedMinDays = 10;
 
 	public static WaterworldConfig loadConfigFile(File file) {
 		WaterworldConfig config = null;

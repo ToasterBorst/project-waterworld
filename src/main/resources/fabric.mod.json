@@ -7,11 +7,20 @@
 	"authors": [
 		"Project Waterworld"
 	],
+	"icon": "assets/project-waterworld/icon.png",
+	"contact": {
+		"homepage": "https://github.com/MagicInternetBeans/project-waterworld",
+		"sources": "https://github.com/MagicInternetBeans/project-waterworld",
+		"issues": "https://github.com/MagicInternetBeans/project-waterworld/issues"
+	},
 	"license": "CC0-1.0",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
 			"waterworld.ProjectWaterworld"
+		],
+		"modmenu": [
+			"waterworld.client.WaterworldModMenu"
 		]
 	},
 	"accessWidener": "project-waterworld.accesswidener",
@@ -19,9 +28,20 @@
 		"project-waterworld.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.18.4",
-		"minecraft": "~26.1.2",
+		"fabricloader": ">=0.19.3",
+		"minecraft": ">=26.2",
 		"java": ">=25",
-		"fabric-api": "*"
+		"fabric-api": ">=0.153.0"
+	},
+	"suggests": {
+		"modmenu": "*"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.github_releases": "https://github.com/MagicInternetBeans/project-waterworld/releases"
+			},
+			"update_checker": true
+		}
 	}
 }

@@ -33,9 +33,15 @@ public class BoatFleeGoal extends Goal {
 	}
 
 	@Override
+	public boolean requiresUpdateEveryTick() {
+		return true;
+	}
+
+	@Override
 	public boolean canUse() {
 		if (!(mob.getVehicle() instanceof AbstractBoat)) return false;
-		return findNearestThreat() != null;
+		threat = findNearestThreat();
+		return threat != null;
 	}
 
 	@Override
@@ -47,7 +53,6 @@ public class BoatFleeGoal extends Goal {
 
 	@Override
 	public void start() {
-		threat = findNearestThreat();
 		rescanTimer = 0;
 	}
 

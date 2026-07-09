@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.equine.TraderLlama;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTraderSpawner;
@@ -44,7 +44,7 @@ public class WanderingTraderMixin {
 		double y = waterPos.getY() + 1.0;
 		double z = waterPos.getZ() + 0.5;
 
-		WanderingTrader trader = EntityType.WANDERING_TRADER.create(level, EntitySpawnReason.NATURAL);
+		WanderingTrader trader = EntityTypes.WANDERING_TRADER.create(level, EntitySpawnReason.NATURAL);
 		if (trader == null) return;
 
 		trader.snapTo(x, y, z, level.getRandom().nextFloat() * 360.0f, 0.0f);
@@ -58,7 +58,7 @@ public class WanderingTraderMixin {
 			trader.startRiding(boat);
 			BoatSpawnHelper.addBoatAI(trader, true);
 
-			TraderLlama llama = EntityType.TRADER_LLAMA.create(level, EntitySpawnReason.NATURAL);
+			TraderLlama llama = EntityTypes.TRADER_LLAMA.create(level, EntitySpawnReason.NATURAL);
 			if (llama != null) {
 				llama.snapTo(x, y, z, level.getRandom().nextFloat() * 360.0f, 0.0f);
 				level.addFreshEntity(llama);

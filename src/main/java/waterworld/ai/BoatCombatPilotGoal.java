@@ -8,6 +8,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
@@ -20,24 +21,36 @@ import java.util.EnumSet;
  * when in range. Crossbow users (pillagers) load and fire from the
  * boat; melee mobs (vindicators) close distance and swing.
  *
+ * The crossbow state machine mirrors vanilla's RangedCrossbowAttackGoal:
+ * UNCHARGED -> CHARGING -> CHARGED (delay) -> READY_TO_ATTACK -> fire -> UNCHARGED
+ *
  * Only activates when the mob is riding a boat AND has an attack target.
  * Falls through to PilotBoatGoal (random wander) when there is no target.
  */
 public class BoatCombatPilotGoal extends Goal {
 	private static final double RANGED_ATTACK_RANGE_SQ = 15.0 * 15.0;
+	private static final double RANGED_STOP_DIST = 12.0;
 	private static final double MELEE_ATTACK_RANGE_SQ = 3.5 * 3.5;
-	private static final double APPROACH_DIST = 4.0;
+	private static final double MELEE_STOP_DIST = 4.0;
 	private static final int MELEE_COOLDOWN_TICKS = 20;
+	private static final int LOS_TIMEOUT_TICKS = 60;
 
 	private final Mob mob;
 	private int meleeTimer;
-	private ChargeState chargeState = ChargeState.UNCHARGED;
+	private int attackDelay;
+	private int noLosTimer;
+	private CrossbowState crossbowState = CrossbowState.UNCHARGED;
 
-	private enum ChargeState { UNCHARGED, CHARGING, CHARGED }
+	private enum CrossbowState { UNCHARGED, CHARGING, CHARGED, READY_TO_ATTACK }
 
 	public BoatCombatPilotGoal(Mob mob) {
 		this.mob = mob;
 		this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+	}
+
+	@Override
+	public boolean requiresUpdateEveryTick() {
+		return true;
 	}
 
 	@Override
@@ -55,7 +68,9 @@ public class BoatCombatPilotGoal extends Goal {
 	@Override
 	public void start() {
 		meleeTimer = 0;
-		chargeState = ChargeState.UNCHARGED;
+		attackDelay = 0;
+		noLosTimer = 0;
+		crossbowState = CrossbowState.UNCHARGED;
 	}
 
 	@Override
@@ -69,7 +84,7 @@ public class BoatCombatPilotGoal extends Goal {
 		if (mob instanceof CrossbowAttackMob cbm) {
 			cbm.setChargingCrossbow(false);
 		}
-		chargeState = ChargeState.UNCHARGED;
+		crossbowState = CrossbowState.UNCHARGED;
 	}
 
 	@Override
@@ -82,16 +97,19 @@ public class BoatCombatPilotGoal extends Goal {
 
 		mob.getLookControl().setLookAt(target, 30.0f, 30.0f);
 
-		steerToward(boat, target.getX(), target.getZ());
-
 		if (isCrossbowUser()) {
+			boolean inRange = distSq <= RANGED_ATTACK_RANGE_SQ;
+			boolean canRow = crossbowState == CrossbowState.UNCHARGED;
+			double stopDist = canRow ? RANGED_STOP_DIST : 0;
+			steerToward(boat, target.getX(), target.getZ(), stopDist, canRow || !inRange);
 			handleCrossbowCombat(target, distSq);
 		} else {
+			steerToward(boat, target.getX(), target.getZ(), MELEE_STOP_DIST, true);
 			handleMeleeCombat(target, distSq);
 		}
 	}
 
-	private void steerToward(AbstractBoat boat, double tx, double tz) {
+	private void steerToward(AbstractBoat boat, double tx, double tz, double stopDist, boolean allowForward) {
 		double dx = tx - boat.getX();
 		double dz = tz - boat.getZ();
 		double dist = Math.sqrt(dx * dx + dz * dz);
@@ -102,50 +120,63 @@ public class BoatCombatPilotGoal extends Goal {
 		boat.setInput(
 				yawDiff < -5,
 				yawDiff > 5,
-				dist > APPROACH_DIST,
+				allowForward && dist > stopDist,
 				false
 		);
 	}
 
 	private boolean isCrossbowUser() {
-		return mob instanceof RangedAttackMob
-				&& mob.getMainHandItem().is(Items.CROSSBOW);
+		return mob instanceof RangedAttackMob && mob.isHolding(Items.CROSSBOW);
 	}
 
 	private void handleCrossbowCombat(LivingEntity target, double distSq) {
 		if (distSq > RANGED_ATTACK_RANGE_SQ) {
 			if (mob.isUsingItem()) {
 				mob.stopUsingItem();
-				chargeState = ChargeState.UNCHARGED;
 				if (mob instanceof CrossbowAttackMob cbm) cbm.setChargingCrossbow(false);
 			}
+			crossbowState = CrossbowState.UNCHARGED;
 			return;
 		}
 
-		ItemStack crossbow = mob.getMainHandItem();
-
-		switch (chargeState) {
+		switch (crossbowState) {
 			case UNCHARGED -> {
-				mob.startUsingItem(InteractionHand.MAIN_HAND);
+				InteractionHand hand = ProjectileUtil.getWeaponHoldingHand(mob, Items.CROSSBOW);
+				mob.startUsingItem(hand);
 				if (mob instanceof CrossbowAttackMob cbm) cbm.setChargingCrossbow(true);
-				chargeState = ChargeState.CHARGING;
+				crossbowState = CrossbowState.CHARGING;
 			}
 			case CHARGING -> {
 				if (!mob.isUsingItem()) {
+					crossbowState = CrossbowState.UNCHARGED;
+					return;
+				}
+				ItemStack useItem = mob.getUseItem();
+				int ticksUsing = mob.getTicksUsingItem();
+				if (ticksUsing >= CrossbowItem.getChargeDuration(useItem, mob)) {
+					mob.releaseUsingItem();
 					if (mob instanceof CrossbowAttackMob cbm) cbm.setChargingCrossbow(false);
-					if (CrossbowItem.isCharged(crossbow)) {
-						chargeState = ChargeState.CHARGED;
-					} else {
-						chargeState = ChargeState.UNCHARGED;
-					}
+					crossbowState = CrossbowState.CHARGED;
+					attackDelay = 20 + mob.getRandom().nextInt(20);
 				}
 			}
 			case CHARGED -> {
-				if (mob instanceof RangedAttackMob ranged) {
-					ranged.performRangedAttack(target, 1.0f);
+				if (--attackDelay <= 0) {
+					crossbowState = CrossbowState.READY_TO_ATTACK;
 				}
-				if (mob instanceof CrossbowAttackMob cbm) cbm.onCrossbowAttackPerformed();
-				chargeState = ChargeState.UNCHARGED;
+			}
+			case READY_TO_ATTACK -> {
+				if (mob.getSensing().hasLineOfSight(target)) {
+					noLosTimer = 0;
+					if (mob instanceof RangedAttackMob ranged) {
+						ranged.performRangedAttack(target, 1.0f);
+					}
+					if (mob instanceof CrossbowAttackMob cbm) cbm.onCrossbowAttackPerformed();
+					crossbowState = CrossbowState.UNCHARGED;
+				} else if (++noLosTimer > LOS_TIMEOUT_TICKS) {
+					noLosTimer = 0;
+					crossbowState = CrossbowState.UNCHARGED;
+				}
 			}
 		}
 	}

@@ -1,20 +1,33 @@
 package waterworld.ai;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.monster.PatrollingMonster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
+import java.util.List;
 
 /**
- * Steers a boat toward random water waypoints. Only assigned to illagers
- * and wandering traders -- never to drowned or ravagers.
+ * Steers a boat toward meaningful destinations. Tries targets in
+ * priority order: nearest player, raid center, patrol target, nearest
+ * land, then random wander as a last resort.
  */
 public class PilotBoatGoal extends Goal {
 	private static final double WAYPOINT_REACH_DIST = 4.0;
+	private static final double PLAYER_SEARCH_RANGE = 64.0;
+	private static final double LAND_SEARCH_RANGE = 48.0;
 	private static final double WANDER_RADIUS = 48.0;
+	private static final int RETARGET_INTERVAL = 100;
+	private static final int WAYPOINT_REACHED_DELAY = 20;
 
 	private final Mob mob;
 	private Vec3 targetPos;
@@ -23,6 +36,11 @@ public class PilotBoatGoal extends Goal {
 	public PilotBoatGoal(Mob mob) {
 		this.mob = mob;
 		this.setFlags(EnumSet.of(Flag.MOVE));
+	}
+
+	@Override
+	public boolean requiresUpdateEveryTick() {
+		return true;
 	}
 
 	@Override
@@ -53,8 +71,8 @@ public class PilotBoatGoal extends Goal {
 		if (!(mob.getVehicle() instanceof AbstractBoat boat)) return;
 
 		if (targetPos == null || --retargetCooldown <= 0) {
-			targetPos = pickRandomWaterTarget();
-			retargetCooldown = 200 + mob.getRandom().nextInt(200);
+			targetPos = pickSmartTarget();
+			retargetCooldown = RETARGET_INTERVAL + mob.getRandom().nextInt(60);
 		}
 
 		double dx = targetPos.x - boat.getX();
@@ -63,6 +81,7 @@ public class PilotBoatGoal extends Goal {
 
 		if (dist < WAYPOINT_REACH_DIST) {
 			targetPos = null;
+			retargetCooldown = WAYPOINT_REACHED_DELAY;
 			boat.setInput(false, false, false, false);
 			return;
 		}
@@ -76,6 +95,88 @@ public class PilotBoatGoal extends Goal {
 			dist > WAYPOINT_REACH_DIST,
 			false
 		);
+	}
+
+	private Vec3 pickSmartTarget() {
+		Vec3 result;
+
+		result = findNearestPlayer();
+		if (result != null) return result;
+
+		result = findRaidCenter();
+		if (result != null) return result;
+
+		result = findPatrolTarget();
+		if (result != null) return result;
+
+		result = findNearestLand();
+		if (result != null) return result;
+
+		return pickRandomWaterTarget();
+	}
+
+	private Vec3 findNearestPlayer() {
+		AABB searchBox = mob.getBoundingBox().inflate(PLAYER_SEARCH_RANGE);
+		List<Player> players = mob.level().getEntitiesOfClass(Player.class, searchBox,
+				p -> p.isAlive() && !p.isSpectator());
+
+		Player nearest = null;
+		double nearestDistSq = Double.MAX_VALUE;
+		for (Player p : players) {
+			double d = p.distanceToSqr(mob);
+			if (d < nearestDistSq) {
+				nearestDistSq = d;
+				nearest = p;
+			}
+		}
+		return nearest != null ? nearest.position() : null;
+	}
+
+	private Vec3 findRaidCenter() {
+		if (mob instanceof Raider raider && raider.hasActiveRaid()
+				&& raider.getCurrentRaid() != null) {
+			BlockPos center = raider.getCurrentRaid().getCenter();
+			return Vec3.atCenterOf(center);
+		}
+		return null;
+	}
+
+	private Vec3 findPatrolTarget() {
+		if (mob instanceof PatrollingMonster patrol && patrol.hasPatrolTarget()) {
+			return Vec3.atCenterOf(patrol.getPatrolTarget());
+		}
+		return null;
+	}
+
+	private Vec3 findNearestLand() {
+		Level level = mob.level();
+		BlockPos origin = mob.blockPosition();
+		int range = (int) LAND_SEARCH_RANGE;
+
+		BlockPos nearest = null;
+		double nearestDistSq = Double.MAX_VALUE;
+
+		for (int attempt = 0; attempt < 20; attempt++) {
+			int dx = mob.getRandom().nextInt(range * 2 + 1) - range;
+			int dz = mob.getRandom().nextInt(range * 2 + 1) - range;
+			BlockPos column = origin.offset(dx, 0, dz);
+
+			for (int dy = -2; dy <= 4; dy++) {
+				BlockPos check = column.atY(origin.getY() + dy);
+				BlockState below = level.getBlockState(check.below());
+				BlockState at = level.getBlockState(check);
+				if (below.isSolid() && !at.isSolid()) {
+					double distSq = check.distSqr(origin);
+					if (distSq < nearestDistSq) {
+						nearestDistSq = distSq;
+						nearest = check;
+					}
+					break;
+				}
+			}
+		}
+
+		return nearest != null ? Vec3.atCenterOf(nearest) : null;
 	}
 
 	private Vec3 pickRandomWaterTarget() {

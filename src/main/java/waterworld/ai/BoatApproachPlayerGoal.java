@@ -32,6 +32,11 @@ public class BoatApproachPlayerGoal extends Goal {
 	}
 
 	@Override
+	public boolean requiresUpdateEveryTick() {
+		return true;
+	}
+
+	@Override
 	public boolean canUse() {
 		if (!(mob.getVehicle() instanceof AbstractBoat)) return false;
 		targetPlayer = findNearestPlayer();

@@ -5,8 +5,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.illager.Pillager;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.PatrolSpawner;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,11 +19,12 @@ import waterworld.WaterworldConfig;
 import waterworld.spawn.BoatSpawnHelper;
 import waterworld.spawn.MobEquipmentHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Enables pillager patrols to spawn on water surfaces in boats.
- * Completely replaces vanilla patrol spawning when enabled.
+ * Pairs pillagers 2-per-boat. Completely replaces vanilla patrol spawning.
  */
 @Mixin(PatrolSpawner.class)
 public class PatrolSpawnerMixin {
@@ -59,6 +61,7 @@ public class PatrolSpawnerMixin {
 		if (waterPos == null) return;
 
 		int count = 2 + level.getRandom().nextInt(3);
+		List<Pillager> spawned = new ArrayList<>(count);
 
 		for (int i = 0; i < count; i++) {
 			BlockPos memberPos;
@@ -69,7 +72,7 @@ public class PatrolSpawnerMixin {
 				memberPos = offset != null ? offset : waterPos;
 			}
 
-			Pillager pillager = EntityType.PILLAGER.create(level, EntitySpawnReason.PATROL);
+			Pillager pillager = EntityTypes.PILLAGER.create(level, EntitySpawnReason.PATROL);
 			if (pillager == null) continue;
 
 			pillager.snapTo(memberPos.getX() + 0.5, memberPos.getY() + 1.0,
@@ -85,7 +88,25 @@ public class PatrolSpawnerMixin {
 			MobEquipmentHelper.equipRandomArmor(pillager, level.getDifficulty(), level.getRandom());
 
 			level.addFreshEntity(pillager);
-			BoatSpawnHelper.mountAsPilot(level, pillager);
+			spawned.add(pillager);
+		}
+
+		for (int i = 0; i < spawned.size(); i += 2) {
+			Pillager pilot = spawned.get(i);
+			AbstractBoat boat = BoatSpawnHelper.spawnBoatAt(level,
+					pilot.getX(), pilot.getY(), pilot.getZ());
+			if (boat == null) continue;
+
+			pilot.startRiding(boat);
+			BoatSpawnHelper.addBoatAI(pilot, true);
+
+			if (i + 1 < spawned.size()) {
+				Pillager passenger = spawned.get(i + 1);
+				passenger.snapTo(pilot.getX(), pilot.getY(), pilot.getZ(),
+						passenger.getYRot(), 0.0f);
+				passenger.startRiding(boat);
+				BoatSpawnHelper.addBoatAI(passenger, false);
+			}
 		}
 	}
 }
