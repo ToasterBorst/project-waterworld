@@ -13,6 +13,7 @@ import net.minecraft.world.item.Items;
 import waterworld.ProjectWaterworld;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldConstants;
+import waterworld.WaterworldDetection;
 
 public final class SpawnGearHandler {
 	private SpawnGearHandler() {
@@ -20,6 +21,7 @@ public final class SpawnGearHandler {
 
 	public static void register() {
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			if (!WaterworldDetection.isActive()) return;
 			if (!WaterworldConfig.INSTANCE.spawnGear) return;
 
 			ServerPlayer player = handler.getPlayer();

@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import waterworld.ProjectWaterworld;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldConstants;
+import waterworld.WaterworldDetection;
 import waterworld.spawn.SpawnIslandGenerator;
 
 @Mixin(MinecraftServer.class)
@@ -33,6 +34,7 @@ public class SpawnPointMixin {
 			boolean spawnBonusChest, boolean isDebug, LevelLoadListener levelLoadListener,
 			CallbackInfo ci) {
 		if (isDebug) return;
+		if (!WaterworldDetection.isWaterworldLevel(level)) return;
 
 		WaterworldConfig config = WaterworldConfig.INSTANCE;
 		boolean hasBiomeOverride = config.spawnOceanBiome != null && !config.spawnOceanBiome.isEmpty();

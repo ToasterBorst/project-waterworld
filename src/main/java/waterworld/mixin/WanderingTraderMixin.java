@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 import waterworld.spawn.BoatSpawnHelper;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
 /**
  * Spawns wandering traders in boats at sea with one llama passenger
  * instead of on land with two leashed llamas.
+ * Spawn frequency scales with world age (day-based difficulty ramp).
  */
 @Mixin(WanderingTraderSpawner.class)
 public class WanderingTraderMixin {
@@ -30,6 +32,21 @@ public class WanderingTraderMixin {
 			CallbackInfoReturnable<Boolean> cir) {
 		WaterworldConfig config = WaterworldConfig.INSTANCE;
 		if (!config.wanderingTraderBoats) return;
+		if (!WaterworldDetection.isActive()) return;
+
+		double scaleFactor = WaterworldConfig.dayScaleFactor(
+				level.getGameTime(), config.wanderingTraderMinDays, config.wanderingTraderFullStrengthDays);
+
+		if (scaleFactor <= 0.0) {
+			cir.setReturnValue(false);
+			return;
+		}
+
+		// Before full strength, skip some spawn attempts proportional to scale
+		if (scaleFactor < 1.0 && level.getRandom().nextDouble() > scaleFactor) {
+			cir.setReturnValue(false);
+			return;
+		}
 
 		List<ServerPlayer> players = level.players();
 		if (players.isEmpty()) return;

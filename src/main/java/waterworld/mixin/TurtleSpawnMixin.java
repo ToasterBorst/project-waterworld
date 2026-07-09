@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 
 /**
  * Allows turtles to spawn on underwater sand in warm and lukewarm oceans.
@@ -27,6 +28,7 @@ public class TurtleSpawnMixin {
 			EntityType<? extends Turtle> type, LevelAccessor level,
 			EntitySpawnReason spawnReason, BlockPos pos, RandomSource random,
 			CallbackInfoReturnable<Boolean> cir) {
+		if (!WaterworldDetection.isActive()) return;
 		if (!WaterworldConfig.INSTANCE.turtleOceanSpawns) return;
 		if (spawnReason != EntitySpawnReason.NATURAL) return;
 		if (pos.getY() >= level.getSeaLevel() + 4) return;

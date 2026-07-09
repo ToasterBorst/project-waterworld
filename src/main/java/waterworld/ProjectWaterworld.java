@@ -1,6 +1,7 @@
 package waterworld;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
@@ -10,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import waterworld.spawn.WaterworldSpawns;
 import waterworld.worldgen.WaterworldBiomeSources;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public class ProjectWaterworld implements ModInitializer {
 	public static final String MOD_ID = "project-waterworld";
@@ -20,12 +21,15 @@ public class ProjectWaterworld implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Initializing Project Waterworld");
 
-		File configFile = FabricLoader.getInstance().getConfigDir().resolve("project-waterworld.json").toFile();
-		WaterworldConfig.INSTANCE = WaterworldConfig.loadConfigFile(configFile);
+		Path configDir = FabricLoader.getInstance().getConfigDir();
+		WaterworldConfig.INSTANCE = WaterworldConfig.load(configDir);
 		LOGGER.info("Loaded Waterworld config");
 
 		WaterworldBiomeSources.register();
 		WaterworldSpawns.register();
+
+		ServerLifecycleEvents.SERVER_STARTED.register(WaterworldDetection::onServerStarted);
+		ServerLifecycleEvents.SERVER_STOPPED.register(WaterworldDetection::onServerStopped);
 
 		try {
 			Identifier packId = Identifier.fromNamespaceAndPath(MOD_ID, "waterworld");

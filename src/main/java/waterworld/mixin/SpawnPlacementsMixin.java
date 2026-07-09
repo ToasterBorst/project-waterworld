@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 
 /**
  * Lets turtle spawn attempts pass ON_GROUND placement checks on underwater sand.
@@ -24,6 +25,7 @@ public class SpawnPlacementsMixin {
 	private static void waterworld$allowUnderwaterTurtlePlacement(
 			EntityType<?> type, LevelReader level, BlockPos pos,
 			CallbackInfoReturnable<Boolean> cir) {
+		if (!WaterworldDetection.isActive()) return;
 		if (!WaterworldConfig.INSTANCE.turtleOceanSpawns) return;
 		if (type != EntityTypes.TURTLE) return;
 

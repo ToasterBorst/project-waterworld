@@ -17,9 +17,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 
 /**
  * Attaches drowned riders to naturally spawned guardians.
+ * Rider chance and trident chance scale with world age (day-based difficulty ramp).
  * Targets Mob.finalizeSpawn since Guardian doesn't override it.
  */
 @Mixin(Mob.class)
@@ -31,18 +33,27 @@ public class DrownedRiderMixin {
 			SpawnGroupData groupData, CallbackInfoReturnable<SpawnGroupData> cir) {
 		if (!((Object) this instanceof Guardian guardian)) return;
 		if (!WaterworldConfig.INSTANCE.drownedRideGuardians) return;
+		if (!WaterworldDetection.isActive()) return;
 		if (spawnReason != EntitySpawnReason.NATURAL) return;
 		if (!(levelAccessor.getLevel() instanceof ServerLevel level)) return;
-		if (level.getRandom().nextDouble() > WaterworldConfig.INSTANCE.drownedRiderChance) return;
+
+		WaterworldConfig config = WaterworldConfig.INSTANCE;
+
+		double riderScale = WaterworldConfig.dayScaleFactor(
+				level.getGameTime(), config.drownedRiderMinDays, config.drownedRiderFullStrengthDays);
+		if (riderScale <= 0.0) return;
+
+		double effectiveRiderChance = config.drownedRiderChance * riderScale;
+		if (level.getRandom().nextDouble() > effectiveRiderChance) return;
 
 		Drowned drowned = EntityTypes.DROWNED.create(level, EntitySpawnReason.MOB_SUMMONED);
 		if (drowned == null) return;
 
 		drowned.snapTo(guardian.getX(), guardian.getY(), guardian.getZ(), guardian.getYRot(), 0.0f);
 
-		int minDays = WaterworldConfig.INSTANCE.tridentDrownedMinDays;
+		int minDays = config.tridentDrownedMinDays;
 		boolean worldOldEnough = minDays <= 0 || level.getGameTime() >= 24000L * minDays;
-		if (worldOldEnough && level.getRandom().nextDouble() < WaterworldConfig.INSTANCE.tridentRiderChance) {
+		if (worldOldEnough && level.getRandom().nextDouble() < config.tridentRiderChance) {
 			drowned.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.TRIDENT));
 			drowned.setDropChance(EquipmentSlot.MAINHAND, 0.08f);
 		}

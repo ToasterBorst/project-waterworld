@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import waterworld.WaterworldDetection;
 
 /**
  * Prevents the ocean monument's terrain-clearing generateWaterBox calls from
@@ -32,6 +33,8 @@ public abstract class OceanMonumentTerrainMixin {
 	@Inject(method = "generateWaterBox", at = @At("HEAD"), cancellable = true)
 	private void waterworld$skipDestructiveClears(WorldGenLevel level, BoundingBox chunkBB,
 			int x1, int y1, int z1, int x2, int y2, int z2, CallbackInfo ci) {
+		if (!WaterworldDetection.isActive()) return;
+
 		int xSpan = x2 - x1;
 		int zSpan = z2 - z1;
 

@@ -1,6 +1,5 @@
 package waterworld.client;
 
-import com.google.gson.annotations.SerializedName;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -14,199 +13,271 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import waterworld.ProjectWaterworld;
+import net.minecraft.util.FormattedCharSequence;
 import waterworld.WaterworldConfig;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class WaterworldConfigScreen extends Screen {
 	private static final int ROW_HEIGHT = 24;
 	private static final int LIST_TOP = 32;
-	private static final int FOOTER_HEIGHT = 32;
+	private static final int FOOTER_HEIGHT = 36;
+	private static final int TOOLTIP_WIDTH = 250;
 
 	private final Screen parent;
-	private final Map<Field, Object> originalValues = new HashMap<>();
-	private final List<ConfigFieldBinding> bindings = new ArrayList<>();
-
+	private final Map<AbstractWidget, Component> tooltips = new IdentityHashMap<>();
+	private final List<Runnable> appliers = new ArrayList<>();
+	private WaterworldConfig config;
+	private Path configDir;
 	private ConfigOptionsList optionList;
 
 	public WaterworldConfigScreen(Screen parent) {
-		super(Component.literal("Project Waterworld"));
+		super(Component.literal("Project Waterworld Configuration"));
 		this.parent = parent;
-		snapshotConfig();
-	}
-
-	private void snapshotConfig() {
-		for (Field field : getEditableConfigFields()) {
-			try {
-				originalValues.put(field, field.get(WaterworldConfig.INSTANCE));
-			} catch (IllegalAccessException e) {
-				ProjectWaterworld.LOGGER.warn("Failed to read config field {}", field.getName(), e);
-			}
-		}
 	}
 
 	@Override
 	protected void init() {
-		this.bindings.clear();
-		this.bindings.addAll(discoverBindings());
+		configDir = FabricLoader.getInstance().getConfigDir();
+		config = WaterworldConfig.load(configDir);
+		WaterworldConfig.INSTANCE = config;
+		tooltips.clear();
+		appliers.clear();
 
 		int listHeight = this.height - LIST_TOP - FOOTER_HEIGHT;
-		this.optionList = new ConfigOptionsList(this.minecraft, this.width - 40, listHeight, LIST_TOP, ROW_HEIGHT);
-		this.optionList.setX(20);
+		optionList = new ConfigOptionsList(this.minecraft, this.width - 40, listHeight, LIST_TOP, ROW_HEIGHT);
+		optionList.setX(20);
 
-		for (ConfigFieldBinding binding : this.bindings) {
-			this.optionList.add(new OptionEntry(binding));
-		}
+		addSection("Activation");
+		addStringOption("Activation Mode", config.activationMode, "auto",
+				"Controls when mod effects are active. auto = only in Waterworld worlds, always = all worlds, never = disabled.",
+				v -> config.activationMode = v);
 
-		this.addWidget(this.optionList);
+		addSection("Features");
+		addBoolOption("Bamboo Replaces Sticks", config.bambooReplacesSticks,
+				"Bamboo can substitute for sticks in any crafting recipe.",
+				v -> config.bambooReplacesSticks = v);
+		addBoolOption("Wild Guardian Spawns", config.wildGuardianSpawns,
+				"Guardians can spawn in open ocean water outside monuments.",
+				v -> config.wildGuardianSpawns = v);
+		addBoolOption("Drowned Ride Guardians", config.drownedRideGuardians,
+				"Drowned riders appear on wild guardians with a configurable trident chance.",
+				v -> config.drownedRideGuardians = v);
+		addBoolOption("Drowned Can Go On Land", config.drownedCanGoOnLand,
+				"Drowned can roam on land instead of returning to water.",
+				v -> config.drownedCanGoOnLand = v);
+		addBoolOption("Pillager Armor", config.pillagerArmor,
+				"Illagers spawn with armor during patrols and raids.",
+				v -> config.pillagerArmor = v);
+		addBoolOption("Mobs Can Exit Boats", config.mobsCanExitBoats,
+				"Intelligent mobs can exit boats when they reach land.",
+				v -> config.mobsCanExitBoats = v);
+		addBoolOption("Mobs Can Pilot Boats", config.mobsCanPilotBoats,
+				"Illagers and wandering traders can steer boats.",
+				v -> config.mobsCanPilotBoats = v);
+		addBoolOption("Wandering Trader Boats", config.wanderingTraderBoats,
+				"Wandering traders spawn in boats at sea with one llama.",
+				v -> config.wanderingTraderBoats = v);
+		addBoolOption("Ocean Pillager Patrols", config.oceanPillagerPatrols,
+				"Pillager patrols and raids spawn in boats on water.",
+				v -> config.oceanPillagerPatrols = v);
+		addBoolOption("Turtle Ocean Spawns", config.turtleOceanSpawns,
+				"Turtles spawn naturally in warm and lukewarm oceans.",
+				v -> config.turtleOceanSpawns = v);
 
-		int buttonY = this.height - FOOTER_HEIGHT + 6;
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.saveAndClose())
+		addSection("Spawn Options");
+		addStringOption("Spawn Ocean Biome", config.spawnOceanBiome, "warm_ocean",
+				"Force spawn in a specific ocean biome. Leave empty to disable. Examples: warm_ocean, lukewarm_ocean, deep_ocean",
+				v -> config.spawnOceanBiome = v);
+		addBoolOption("Spawn Island", config.spawnIsland,
+				"Generate a small island at world spawn.",
+				v -> config.spawnIsland = v);
+		addBoolOption("Spawn Gear", config.spawnGear,
+				"Give players a bamboo chest raft with starter items on first spawn.",
+				v -> config.spawnGear = v);
+
+		addSection("Tunable Values");
+		addIntOption("Guardian Spawn Weight", config.guardianSpawnWeight,
+				"Spawn weight for wild guardians. Squid is ~5, keep very low.",
+				v -> config.guardianSpawnWeight = v);
+		addIntOption("Turtle Spawn Weight", config.turtleSpawnWeight,
+				"Spawn weight for ocean turtles.",
+				v -> config.turtleSpawnWeight = v);
+		addDoubleOption("Guardian Spawn Chance", config.guardianSpawnChance,
+				"Chance a guardian spawn attempt succeeds (0.0-1.0, lower = rarer).",
+				v -> config.guardianSpawnChance = v);
+		addDoubleOption("Drowned Rider Chance", config.drownedRiderChance,
+				"Chance a wild guardian spawns with a drowned rider (0.0-1.0).",
+				v -> config.drownedRiderChance = v);
+		addDoubleOption("Trident Rider Chance", config.tridentRiderChance,
+				"Chance a drowned rider carries a trident (0.0-1.0).",
+				v -> config.tridentRiderChance = v);
+		addDoubleOption("Pillager Armor Chance", config.pillagerArmorChance,
+				"Base chance per armor piece for illagers (0.0-1.0).",
+				v -> config.pillagerArmorChance = v);
+		addBoolOption("Armor Scales With Difficulty", config.armorScalesWithDifficulty,
+				"Whether armor tier scales with the world difficulty setting.",
+				v -> config.armorScalesWithDifficulty = v);
+
+		addSection("Difficulty Scaling (days)");
+		addIntOption("Trident Drowned Min Days", config.tridentDrownedMinDays,
+				"Days before drowned can spawn with tridents. 0 = immediate.",
+				v -> config.tridentDrownedMinDays = v);
+		addIntOption("Guardian Min Days", config.guardianMinDays,
+				"Days before wild guardians start spawning.",
+				v -> config.guardianMinDays = v);
+		addIntOption("Guardian Full Strength Days", config.guardianFullStrengthDays,
+				"Day guardian spawn chance reaches its full configured value.",
+				v -> config.guardianFullStrengthDays = v);
+		addIntOption("Patrol Min Days", config.patrolMinDays,
+				"Days before pillager patrols begin.",
+				v -> config.patrolMinDays = v);
+		addIntOption("Patrol Full Strength Days", config.patrolFullStrengthDays,
+				"Day patrol frequency reaches full rate.",
+				v -> config.patrolFullStrengthDays = v);
+		addIntOption("Wandering Trader Min Days", config.wanderingTraderMinDays,
+				"Days before wandering traders appear.",
+				v -> config.wanderingTraderMinDays = v);
+		addIntOption("Trader Full Strength Days", config.wanderingTraderFullStrengthDays,
+				"Day wandering trader frequency reaches full rate.",
+				v -> config.wanderingTraderFullStrengthDays = v);
+		addIntOption("Drowned Rider Min Days", config.drownedRiderMinDays,
+				"Days before drowned riders appear on guardians.",
+				v -> config.drownedRiderMinDays = v);
+		addIntOption("Rider Full Strength Days", config.drownedRiderFullStrengthDays,
+				"Day drowned rider chance reaches its full configured value.",
+				v -> config.drownedRiderFullStrengthDays = v);
+
+		this.addWidget(optionList);
+
+		int buttonY = this.height - FOOTER_HEIGHT + 8;
+		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> saveAndClose())
 				.pos(this.width / 2 - 154, buttonY)
 				.size(150, 20)
 				.build());
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.cancelAndClose())
+		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> cancelAndClose())
 				.pos(this.width / 2 + 4, buttonY)
 				.size(150, 20)
 				.build());
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor drawContext, int mouseX, int mouseY, float delta) {
-		super.extractRenderState(drawContext, mouseX, mouseY, delta);
-		if (this.optionList != null) {
-			this.optionList.extractRenderState(drawContext, mouseX, mouseY, delta);
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		super.extractRenderState(graphics, mouseX, mouseY, delta);
+		if (optionList != null) {
+			optionList.extractRenderState(graphics, mouseX, mouseY, delta);
 		}
-		drawContext.centeredText(this.font, this.title, this.width / 2, 8, 0xFFFFFFFF);
+		graphics.centeredText(this.font, this.title, this.width / 2, 8, 0xFFFFFFFF);
+
+		for (var entry : tooltips.entrySet()) {
+			AbstractWidget widget = entry.getKey();
+			if (widget.isHovered()) {
+				List<FormattedCharSequence> lines = this.font.split(entry.getValue(), TOOLTIP_WIDTH);
+				graphics.setTooltipForNextFrame(this.font, lines, mouseX, mouseY);
+				break;
+			}
+		}
 	}
 
 	private void saveAndClose() {
-		for (ConfigFieldBinding binding : this.bindings) {
-			try {
-				applyBinding(binding);
-			} catch (IllegalAccessException | NumberFormatException e) {
-				ProjectWaterworld.LOGGER.warn("Failed to apply config field {}", binding.field().getName(), e);
-			}
+		for (Runnable applier : appliers) {
+			applier.run();
 		}
-
-		WaterworldConfig.INSTANCE.saveConfigFile(
-				FabricLoader.getInstance().getConfigDir().resolve("project-waterworld.json").toFile());
-		this.minecraft.gui.setScreen(this.parent);
+		config.save(configDir);
+		WaterworldConfig.INSTANCE = config;
+		this.minecraft.gui.setScreen(parent);
 	}
 
 	private void cancelAndClose() {
-		for (Map.Entry<Field, Object> entry : this.originalValues.entrySet()) {
+		WaterworldConfig.INSTANCE = WaterworldConfig.load(configDir);
+		this.minecraft.gui.setScreen(parent);
+	}
+
+	private void addSection(String title) {
+		optionList.add(optionList.createSection(Component.literal(title)).asEntry());
+	}
+
+	private void addBoolOption(String label, boolean value, String tooltip, BoolConsumer setter) {
+		CycleButton<Boolean> button = CycleButton.onOffBuilder(value)
+				.create(0, 0, 120, 20, Component.empty(), (btn, val) -> {});
+		tooltips.put(button, Component.literal(tooltip));
+		appliers.add(() -> setter.accept(button.getValue()));
+		optionList.add(optionList.createOption(Component.literal(label), button).asEntry());
+	}
+
+	private void addIntOption(String label, int value, String tooltip, IntConsumer setter) {
+		EditBox box = new EditBox(this.font, 0, 0, 120, 20, Component.literal(label));
+		box.setValue(String.valueOf(value));
+		box.setMaxLength(10);
+		tooltips.put(box, Component.literal(tooltip));
+		appliers.add(() -> {
 			try {
-				entry.getKey().set(WaterworldConfig.INSTANCE, entry.getValue());
-			} catch (IllegalAccessException e) {
-				ProjectWaterworld.LOGGER.warn("Failed to restore config field {}", entry.getKey().getName(), e);
+				setter.accept(Integer.parseInt(box.getValue().trim()));
+			} catch (NumberFormatException ignored) {
 			}
-		}
-		this.minecraft.gui.setScreen(this.parent);
+		});
+		optionList.add(optionList.createOption(Component.literal(label), box).asEntry());
 	}
 
-	private static void applyBinding(ConfigFieldBinding binding) throws IllegalAccessException {
-		Field field = binding.field();
-		AbstractWidget widget = binding.widget();
-		Class<?> type = field.getType();
-
-		if (widget instanceof CycleButton<?> cycleButton && type == boolean.class) {
-			field.setBoolean(WaterworldConfig.INSTANCE, (Boolean) cycleButton.getValue());
-			return;
-		}
-
-		if (widget instanceof EditBox editBox) {
-			String text = editBox.getValue().trim();
-			if (type == int.class) {
-				field.setInt(WaterworldConfig.INSTANCE, Integer.parseInt(text));
-			} else if (type == double.class) {
-				field.setDouble(WaterworldConfig.INSTANCE, Double.parseDouble(text));
-			} else if (type == String.class) {
-				field.set(WaterworldConfig.INSTANCE, text);
+	private void addDoubleOption(String label, double value, String tooltip, DoubleConsumer setter) {
+		EditBox box = new EditBox(this.font, 0, 0, 120, 20, Component.literal(label));
+		box.setValue(String.valueOf(value));
+		box.setMaxLength(16);
+		tooltips.put(box, Component.literal(tooltip));
+		appliers.add(() -> {
+			try {
+				setter.accept(Double.parseDouble(box.getValue().trim()));
+			} catch (NumberFormatException ignored) {
 			}
-		}
+		});
+		optionList.add(optionList.createOption(Component.literal(label), box).asEntry());
 	}
 
-	private static List<Field> getEditableConfigFields() {
-		List<Field> fields = new ArrayList<>();
-
-		for (Field field : WaterworldConfig.class.getDeclaredFields()) {
-			int modifiers = field.getModifiers();
-			if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
-				continue;
-			}
-			if (field.getName().startsWith("_comment")) {
-				continue;
-			}
-
-			SerializedName serializedName = field.getAnnotation(SerializedName.class);
-			if (serializedName == null) {
-				continue;
-			}
-
-			String key = serializedName.value();
-			if (key.startsWith("//")) {
-				continue;
-			}
-
-			field.setAccessible(true);
-			fields.add(field);
-		}
-
-		return fields;
+	private void addStringOption(String label, String value, String hint, String tooltip, StringConsumer setter) {
+		EditBox box = new EditBox(this.font, 0, 0, 120, 20, Component.literal(label));
+		box.setValue(value);
+		box.setMaxLength(256);
+		box.setHint(Component.literal(hint));
+		tooltips.put(box, Component.literal(tooltip));
+		appliers.add(() -> setter.accept(box.getValue().trim()));
+		optionList.add(optionList.createOption(Component.literal(label), box).asEntry());
 	}
 
-	private List<ConfigFieldBinding> discoverBindings() {
-		List<ConfigFieldBinding> discovered = new ArrayList<>();
-
-		for (Field field : getEditableConfigFields()) {
-			SerializedName serializedName = field.getAnnotation(SerializedName.class);
-			String key = serializedName.value();
-			AbstractWidget widget = createWidget(field, Component.literal(key));
-			if (widget == null) {
-				ProjectWaterworld.LOGGER.warn("Skipping unsupported config field type: {}", field.getName());
-				continue;
-			}
-
-			discovered.add(new ConfigFieldBinding(field, Component.literal(key), widget));
-		}
-
-		return discovered;
+	@Override
+	public void onClose() {
+		this.minecraft.gui.setScreen(parent);
 	}
 
-	private AbstractWidget createWidget(Field field, Component label) {
-		Class<?> type = field.getType();
-		try {
-			if (type == boolean.class) {
-				boolean value = field.getBoolean(WaterworldConfig.INSTANCE);
-				return CycleButton.onOffBuilder(value)
-						.create(0, 0, 120, 20, Component.empty(), (button, newValue) -> {});
-			}
-			if (type == int.class || type == double.class || type == String.class) {
-				Object value = field.get(WaterworldConfig.INSTANCE);
-				EditBox editBox = new EditBox(this.font, 0, 0, 120, 20, label);
-				editBox.setValue(String.valueOf(value));
-				editBox.setMaxLength(256);
-				return editBox;
-			}
-		} catch (IllegalAccessException e) {
-			ProjectWaterworld.LOGGER.warn("Failed to read config field {}", field.getName(), e);
-		}
-		return null;
+	@FunctionalInterface
+	private interface BoolConsumer {
+		void accept(boolean value);
 	}
 
-	private final class ConfigOptionsList extends ContainerObjectSelectionList<OptionEntry> {
+	@FunctionalInterface
+	private interface IntConsumer {
+		void accept(int value);
+	}
+
+	@FunctionalInterface
+	private interface DoubleConsumer {
+		void accept(double value);
+	}
+
+	@FunctionalInterface
+	private interface StringConsumer {
+		void accept(String value);
+	}
+
+	private final class ConfigOptionsList extends ContainerObjectSelectionList<ConfigOptionsList.BaseEntry> {
 		ConfigOptionsList(Minecraft minecraft, int width, int height, int top, int itemHeight) {
 			super(minecraft, width, height, top, itemHeight);
 		}
 
-		void add(OptionEntry entry) {
+		void add(BaseEntry entry) {
 			this.addEntry(entry);
 		}
 
@@ -219,55 +290,113 @@ public class WaterworldConfigScreen extends Screen {
 		public int getRowWidth() {
 			return this.width - 10;
 		}
-	}
 
-	private final class OptionEntry extends ContainerObjectSelectionList.Entry<OptionEntry> {
-		private final ConfigFieldBinding binding;
-
-		OptionEntry(ConfigFieldBinding binding) {
-			this.binding = binding;
+		SectionEntry createSection(Component title) {
+			return new SectionEntry(title);
 		}
 
-		@Override
-		public void extractContent(
-				GuiGraphicsExtractor graphics,
-				int mouseX,
-				int mouseY,
-				boolean hovered,
-				float partialTick
-		) {
-			int left = this.getContentX();
-			int top = this.getContentY();
-			int rowWidth = WaterworldConfigScreen.this.optionList.getRowWidth();
-			int labelWidth = rowWidth / 2 - 4;
-			int controlX = left + labelWidth + 8;
-			int controlWidth = rowWidth - labelWidth - 8;
-
-			graphics.text(
-					WaterworldConfigScreen.this.font,
-					this.binding.label(),
-					left + 4,
-					top + (ROW_HEIGHT - WaterworldConfigScreen.this.font.lineHeight) / 2,
-					0xFFFFFFFF
-			);
-
-			AbstractWidget widget = this.binding.widget();
-			widget.setPosition(controlX, top + 2);
-			widget.setWidth(controlWidth);
-			widget.setHeight(ROW_HEIGHT - 4);
+		OptionEntry createOption(Component label, AbstractWidget widget) {
+			return new OptionEntry(label, widget);
 		}
 
-		@Override
-		public List<? extends GuiEventListener> children() {
-			return List.of(this.binding.widget());
+		final class BaseEntry extends ContainerObjectSelectionList.Entry<BaseEntry> {
+			private final EntryRenderer renderer;
+
+			BaseEntry(EntryRenderer renderer) {
+				this.renderer = renderer;
+			}
+
+			@Override
+			public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+					boolean hovered, float partialTick) {
+				renderer.render(this, graphics, mouseX, mouseY, partialTick);
+			}
+
+			@Override
+			public List<? extends GuiEventListener> children() {
+				return renderer.children();
+			}
+
+			@Override
+			public List<? extends NarratableEntry> narratables() {
+				return renderer.narratables();
+			}
 		}
 
-		@Override
-		public List<? extends NarratableEntry> narratables() {
-			return List.of(this.binding.widget());
-		}
-	}
+		final class SectionEntry {
+			private final BaseEntry entry;
 
-	private record ConfigFieldBinding(Field field, Component label, AbstractWidget widget) {
+			SectionEntry(Component title) {
+				this.entry = new BaseEntry(new EntryRenderer() {
+					@Override
+					public void render(BaseEntry entry, GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+						int left = entry.getContentX();
+						int top = entry.getContentY();
+						graphics.text(WaterworldConfigScreen.this.font, title, left + 4,
+								top + (ROW_HEIGHT - WaterworldConfigScreen.this.font.lineHeight) / 2, 0xFFFF55);
+					}
+
+					@Override
+					public List<? extends GuiEventListener> children() {
+						return List.of();
+					}
+
+					@Override
+					public List<? extends NarratableEntry> narratables() {
+						return List.of();
+					}
+				});
+			}
+
+			BaseEntry asEntry() {
+				return entry;
+			}
+		}
+
+		final class OptionEntry {
+			private final BaseEntry entry;
+
+			OptionEntry(Component label, AbstractWidget widget) {
+				this.entry = new BaseEntry(new EntryRenderer() {
+					@Override
+					public void render(BaseEntry entry, GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+						int left = entry.getContentX();
+						int top = entry.getContentY();
+						int rowWidth = ConfigOptionsList.this.getRowWidth();
+						int labelWidth = rowWidth / 2 - 4;
+						int controlX = left + labelWidth + 8;
+						int controlWidth = rowWidth - labelWidth - 8;
+
+						graphics.text(WaterworldConfigScreen.this.font, label, left + 4,
+								top + (ROW_HEIGHT - WaterworldConfigScreen.this.font.lineHeight) / 2, 0xFFFFFFFF);
+
+						widget.setPosition(controlX, top + 2);
+						widget.setWidth(controlWidth);
+						widget.setHeight(ROW_HEIGHT - 4);
+						widget.extractRenderState(graphics, mouseX, mouseY, partialTick);
+					}
+
+					@Override
+					public List<? extends GuiEventListener> children() {
+						return List.of(widget);
+					}
+
+					@Override
+					public List<? extends NarratableEntry> narratables() {
+						return List.of(widget);
+					}
+				});
+			}
+
+			BaseEntry asEntry() {
+				return entry;
+			}
+		}
+
+		private interface EntryRenderer {
+			void render(BaseEntry entry, GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick);
+			List<? extends GuiEventListener> children();
+			List<? extends NarratableEntry> narratables();
+		}
 	}
 }

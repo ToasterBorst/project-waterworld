@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 
 /**
  * Allows bamboo to substitute for sticks in any recipe ingredient.
@@ -29,6 +30,7 @@ public class BambooStickIngredientMixin {
 	private void waterworld$bambooAsStick(ItemStack stack,
 			CallbackInfoReturnable<Boolean> cir) {
 		if (cir.getReturnValue()) return;
+		if (!WaterworldDetection.isActive()) return;
 		if (!WaterworldConfig.INSTANCE.bambooReplacesSticks) return;
 		if (!stack.is(Items.BAMBOO)) return;
 

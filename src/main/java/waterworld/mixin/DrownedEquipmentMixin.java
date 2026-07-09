@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 
 /**
  * Prevents naturally spawned drowned from receiving tridents
@@ -23,6 +24,7 @@ public class DrownedEquipmentMixin {
 	@Inject(method = "populateDefaultEquipmentSlots", at = @At("TAIL"))
 	private void waterworld$stripEarlyTrident(net.minecraft.util.RandomSource random,
 			DifficultyInstance difficulty, CallbackInfo ci) {
+		if (!WaterworldDetection.isActive()) return;
 		Drowned self = (Drowned) (Object) this;
 		Level level = self.level();
 		if (!(level instanceof ServerLevel serverLevel)) return;

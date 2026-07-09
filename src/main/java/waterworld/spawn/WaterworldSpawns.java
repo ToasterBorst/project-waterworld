@@ -18,6 +18,7 @@ import net.minecraft.world.entity.animal.equine.TraderLlama;
 import net.minecraft.world.level.biome.Biomes;
 import waterworld.ProjectWaterworld;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 
 public final class WaterworldSpawns {
 	private WaterworldSpawns() {
@@ -58,6 +59,7 @@ public final class WaterworldSpawns {
 	private static void registerEntityLoadEvents() {
 		ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
 			if (!(level instanceof ServerLevel)) return;
+			if (!WaterworldDetection.isActive()) return;
 			if (!(entity instanceof Mob mob)) return;
 
 			WaterworldConfig config = WaterworldConfig.INSTANCE;

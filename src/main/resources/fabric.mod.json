@@ -35,13 +35,5 @@
 	},
 	"suggests": {
 		"modmenu": "*"
-	},
-	"custom": {
-		"modmenu": {
-			"links": {
-				"modmenu.github_releases": "https://github.com/MagicInternetBeans/project-waterworld/releases"
-			},
-			"update_checker": true
-		}
 	}
 }

@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 import waterworld.spawn.BoatSpawnHelper;
 import waterworld.spawn.MobEquipmentHelper;
 
@@ -36,6 +37,7 @@ public class RaidSpawnMixin {
 	private void waterworld$mountRaidersInBoats(ServerLevel level, BlockPos pos, CallbackInfo ci) {
 		WaterworldConfig config = WaterworldConfig.INSTANCE;
 		if (!config.oceanPillagerPatrols) return;
+		if (!WaterworldDetection.isActive()) return;
 
 		Raid raid = (Raid) (Object) this;
 

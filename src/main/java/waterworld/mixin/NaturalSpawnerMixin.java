@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 
 /**
  * Accepts water-filled spawn blocks for turtles so natural spawning can reach rule checks.
@@ -24,6 +25,7 @@ public class NaturalSpawnerMixin {
 	private static void waterworld$allowWaterForTurtles(
 			BlockGetter level, BlockPos pos, BlockState state, FluidState fluid, EntityType<?> type,
 			CallbackInfoReturnable<Boolean> cir) {
+		if (!WaterworldDetection.isActive()) return;
 		if (!WaterworldConfig.INSTANCE.turtleOceanSpawns) return;
 		if (type != EntityTypes.TURTLE) return;
 		if (!fluid.is(FluidTags.WATER)) return;

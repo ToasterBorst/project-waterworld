@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 
 /**
  * Vanilla boats only call controlBoat() on the client side, so
@@ -23,6 +24,7 @@ public class BoatControlMixin {
 	private void waterworld$serverControlBoat(CallbackInfo ci) {
 		AbstractBoat boat = (AbstractBoat) (Object) this;
 		if (boat.level().isClientSide()) return;
+		if (!WaterworldDetection.isActive()) return;
 		if (!WaterworldConfig.INSTANCE.mobsCanPilotBoats) return;
 		if (!(boat.getControllingPassenger() instanceof Mob)) return;
 

@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import waterworld.WaterworldConfig;
+import waterworld.WaterworldDetection;
 import waterworld.spawn.BoatSpawnHelper;
 import waterworld.spawn.MobEquipmentHelper;
 
@@ -25,6 +26,7 @@ import java.util.List;
 /**
  * Enables pillager patrols to spawn on water surfaces in boats.
  * Pairs pillagers 2-per-boat. Completely replaces vanilla patrol spawning.
+ * Spawn frequency scales with world age (day-based difficulty ramp).
  */
 @Mixin(PatrolSpawner.class)
 public class PatrolSpawnerMixin {
@@ -37,6 +39,7 @@ public class PatrolSpawnerMixin {
 			CallbackInfo ci) {
 		WaterworldConfig config = WaterworldConfig.INSTANCE;
 		if (!config.oceanPillagerPatrols) return;
+		if (!WaterworldDetection.isActive()) return;
 
 		ci.cancel();
 
@@ -48,7 +51,15 @@ public class PatrolSpawnerMixin {
 		if (this.nextTick > 0) return;
 		this.nextTick = 12000 + level.getRandom().nextInt(1200);
 
-		if (level.getGameTime() < 24000L * 5) return;
+		double scaleFactor = WaterworldConfig.dayScaleFactor(
+				level.getGameTime(), config.patrolMinDays, config.patrolFullStrengthDays);
+
+		if (scaleFactor <= 0.0) return;
+
+		// At low scale factors, skip most attempts (makes early-game patrols rare)
+		if (scaleFactor < 1.0 && level.getRandom().nextDouble() > scaleFactor) return;
+
+		// Additional random gate to reduce overall frequency
 		if (level.getRandom().nextInt(5) != 0) return;
 
 		List<ServerPlayer> players = level.players();
