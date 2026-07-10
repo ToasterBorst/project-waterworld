@@ -1,6 +1,7 @@
 package waterworld.structure;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
@@ -9,6 +10,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.feline.CatVariant;
+import net.minecraft.world.entity.animal.feline.CatVariants;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -181,6 +184,15 @@ public class WitchHutBoatPiece extends TemplateStructurePiece {
 			cat.snapTo(tableTop.getX() + 0.5, tableTop.getY(), tableTop.getZ() + 0.5, 0.0F, 0.0F);
 			cat.finalizeSpawn(serverLevel, level.getCurrentDifficultyAt(tableTop),
 					EntitySpawnReason.STRUCTURE, null);
+
+			Holder.Reference<CatVariant> allBlack = serverLevel.registryAccess()
+					.lookupOrThrow(Registries.CAT_VARIANT)
+					.get(CatVariants.ALL_BLACK)
+					.orElse(null);
+			if (allBlack != null) {
+				cat.setVariant(allBlack);
+			}
+
 			cat.setPersistenceRequired();
 			cat.setTame(true, false);
 			cat.setOrderedToSit(true);

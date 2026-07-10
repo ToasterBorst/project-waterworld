@@ -1,6 +1,7 @@
 package waterworld.structure;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -8,6 +9,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
@@ -26,7 +28,7 @@ import java.util.List;
 public class WitchHutBoatSpawner {
 
 	private static final int TICK_INTERVAL = 200;
-	private static final int SEARCH_RADIUS = 48;
+	private static final int SCAN_RADIUS_CHUNKS = 4;
 	private static final int MAX_WITCHES_PER_STRUCTURE = 1;
 
 	private int nextTick;
@@ -39,39 +41,61 @@ public class WitchHutBoatSpawner {
 		if (nextTick > 0) return;
 		nextTick = TICK_INTERVAL;
 
-		List<? extends Player> players = level.players();
-		if (players.isEmpty()) return;
-
-		RandomSource random = level.getRandom();
-		Player player = players.get(random.nextInt(players.size()));
-		BlockPos playerPos = player.blockPosition();
-
-		int offsetX = (8 + random.nextInt(SEARCH_RADIUS)) * (random.nextBoolean() ? -1 : 1);
-		int offsetZ = (8 + random.nextInt(SEARCH_RADIUS)) * (random.nextBoolean() ? -1 : 1);
-		BlockPos checkPos = playerPos.offset(offsetX, 0, offsetZ);
-
-		if (!level.hasChunksAt(checkPos.getX() - 2, checkPos.getZ() - 2, checkPos.getX() + 2, checkPos.getZ() + 2)) {
-			return;
-		}
-
 		Structure witchHutBoat = level.registryAccess()
 				.lookupOrThrow(Registries.STRUCTURE)
 				.getValue(WaterworldStructures.WITCH_HUT_BOAT_KEY);
 		if (witchHutBoat == null) return;
 
-		StructureStart start = level.structureManager().getStructureAt(checkPos, witchHutBoat);
-		if (!start.isValid()) return;
+		for (Player player : level.players()) {
+			if (player.isSpectator()) continue;
 
+			StructureStart start = findNearbyWitchHut(level, player.blockPosition(), witchHutBoat);
+			if (start == null) continue;
+
+			if (trySpawnWitch(level, start)) return;
+		}
+	}
+
+	private StructureStart findNearbyWitchHut(ServerLevel level, BlockPos playerPos, Structure structure) {
+		int playerChunkX = SectionPos.blockToSectionCoord(playerPos.getX());
+		int playerChunkZ = SectionPos.blockToSectionCoord(playerPos.getZ());
+
+		for (int dx = -SCAN_RADIUS_CHUNKS; dx <= SCAN_RADIUS_CHUNKS; dx++) {
+			for (int dz = -SCAN_RADIUS_CHUNKS; dz <= SCAN_RADIUS_CHUNKS; dz++) {
+				int cx = playerChunkX + dx;
+				int cz = playerChunkZ + dz;
+
+				if (!level.hasChunk(cx, cz)) continue;
+
+				var refs = level.getChunk(cx, cz).getAllReferences();
+				if (!refs.containsKey(structure)) continue;
+
+				BlockPos center = new ChunkPos(cx, cz).getMiddleBlockPosition(playerPos.getY());
+				StructureStart start = level.structureManager().getStructureAt(center, structure);
+				if (start.isValid()) return start;
+
+				for (int y = level.getSeaLevel() - 5; y <= level.getSeaLevel() + 10; y++) {
+					BlockPos probe = new BlockPos(center.getX(), y, center.getZ());
+					start = level.structureManager().getStructureAt(probe, structure);
+					if (start.isValid()) return start;
+				}
+			}
+		}
+		return null;
+	}
+
+	private boolean trySpawnWitch(ServerLevel level, StructureStart start) {
 		BoundingBox structureBB = start.getBoundingBox();
 		AABB searchArea = new AABB(
 				structureBB.minX(), structureBB.minY(), structureBB.minZ(),
 				structureBB.maxX() + 1, structureBB.maxY() + 1, structureBB.maxZ() + 1);
 
 		List<Witch> existingWitches = level.getEntitiesOfClass(Witch.class, searchArea);
-		if (existingWitches.size() >= MAX_WITCHES_PER_STRUCTURE) return;
+		if (existingWitches.size() >= MAX_WITCHES_PER_STRUCTURE) return false;
 
+		RandomSource random = level.getRandom();
 		BlockPos spawnPos = findValidSpawnPos(level, start, random);
-		if (spawnPos == null) return;
+		if (spawnPos == null) return false;
 
 		Witch witch = EntityTypes.WITCH.create(level, EntitySpawnReason.NATURAL);
 		if (witch != null) {
@@ -82,7 +106,9 @@ public class WitchHutBoatSpawner {
 					random.nextFloat() * 360.0F, 0.0F);
 			level.addFreshEntityWithPassengers(witch);
 			ProjectWaterworld.LOGGER.debug("WitchHutBoatSpawner: spawned witch at {}", spawnPos);
+			return true;
 		}
+		return false;
 	}
 
 	private BlockPos findValidSpawnPos(ServerLevel level, StructureStart start, RandomSource random) {
@@ -95,9 +121,8 @@ public class WitchHutBoatSpawner {
 
 				for (int y = bb.maxY(); y >= bb.minY(); y--) {
 					BlockPos pos = new BlockPos(x, y, z);
-					BlockPos below = pos.below();
 
-					if (level.getBlockState(below).isSolidRender()
+					if (level.getBlockState(pos.below()).isSolidRender()
 							&& level.getBlockState(pos).isAir()
 							&& level.getBlockState(pos.above()).isAir()) {
 						return pos;
