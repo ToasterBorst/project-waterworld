@@ -8,6 +8,7 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.monster.illager.Evoker;
@@ -64,6 +65,7 @@ public final class WaterworldSpawns {
 
 			WaterworldConfig config = WaterworldConfig.INSTANCE;
 			injectBoatGoals(mob, config);
+			injectDoorGoals(mob);
 		});
 	}
 
@@ -85,5 +87,17 @@ public final class WaterworldSpawns {
 		if (!canDismount && !canPilot) return;
 
 		BoatSpawnHelper.addBoatAI(mob, canPilot);
+	}
+
+	private static void injectDoorGoals(Mob mob) {
+		boolean shouldOpenDoors = mob instanceof Witch
+				|| mob instanceof Pillager
+				|| mob instanceof Vindicator
+				|| mob instanceof Evoker;
+
+		if (!shouldOpenDoors) return;
+
+		mob.getNavigation().setCanOpenDoors(true);
+		mob.goalSelector.addGoal(3, new OpenDoorGoal(mob, true));
 	}
 }

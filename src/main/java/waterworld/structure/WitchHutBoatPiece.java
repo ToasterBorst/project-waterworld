@@ -1,0 +1,191 @@
+package waterworld.structure;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.storage.loot.LootTable;
+import waterworld.ProjectWaterworld;
+
+import java.util.List;
+
+public class WitchHutBoatPiece extends TemplateStructurePiece {
+
+	private static final ResourceKey<LootTable> LOOT_TABLE = ResourceKey.create(
+			Registries.LOOT_TABLE,
+			Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "chests/witch_hut_boat"));
+
+	public WitchHutBoatPiece(StructureTemplateManager manager, Identifier template,
+			BlockPos pos, RandomSource random) {
+		super(WaterworldStructures.WITCH_HUT_BOAT_PIECE, 0, manager, template,
+				template.toString(), makeSettings(random), pos);
+	}
+
+	public WitchHutBoatPiece(StructurePieceSerializationContext context, CompoundTag tag) {
+		super(WaterworldStructures.WITCH_HUT_BOAT_PIECE, tag, context.structureTemplateManager(),
+				id -> makeSettings(null));
+	}
+
+	private static StructurePlaceSettings makeSettings(RandomSource random) {
+		Rotation rotation = random != null
+				? Rotation.getRandom(random)
+				: Rotation.NONE;
+		return new StructurePlaceSettings()
+				.setRotation(rotation)
+				.setKnownShape(true)
+				.setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING)
+				.addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
+	}
+
+	@Override
+	protected void handleDataMarker(String marker, BlockPos pos, ServerLevelAccessor level,
+			RandomSource random, BoundingBox box) {
+	}
+
+	@Override
+	public void postProcess(WorldGenLevel level, StructureManager structureManager,
+			ChunkGenerator generator, RandomSource random,
+			BoundingBox chunkBox, ChunkPos chunkPos, BlockPos pivot) {
+		super.postProcess(level, structureManager, generator, random, chunkBox, chunkPos, pivot);
+		clearFloodedAirBlocks(level, chunkBox);
+		setChestLoot(level, chunkBox, random);
+		spawnInitialMobs(level, chunkBox, random);
+	}
+
+	/**
+	 * Finds all positions the template defines as air and ensures they are air
+	 * in the world — prevents ocean water from persisting inside the structure.
+	 * With IGNORE_WATERLOGGING, waterloggable blocks retain their NBT-saved state:
+	 * exterior hull blocks stay waterlogged, interior blocks stay dry.
+	 */
+	private void clearFloodedAirBlocks(WorldGenLevel level, BoundingBox chunkBox) {
+		List<StructureTemplate.StructureBlockInfo> airBlocks =
+				this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.AIR);
+
+		for (StructureTemplate.StructureBlockInfo info : airBlocks) {
+			BlockPos worldPos = info.pos();
+			if (!chunkBox.isInside(worldPos)) continue;
+
+			BlockState existing = level.getBlockState(worldPos);
+			if (existing.is(Blocks.WATER)) {
+				level.setBlock(worldPos, Blocks.AIR.defaultBlockState(), 2);
+			}
+		}
+
+		List<StructureTemplate.StructureBlockInfo> caveAirBlocks =
+				this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.CAVE_AIR);
+
+		for (StructureTemplate.StructureBlockInfo info : caveAirBlocks) {
+			BlockPos worldPos = info.pos();
+			if (!chunkBox.isInside(worldPos)) continue;
+
+			BlockState existing = level.getBlockState(worldPos);
+			if (existing.is(Blocks.WATER)) {
+				level.setBlock(worldPos, Blocks.CAVE_AIR.defaultBlockState(), 2);
+			}
+		}
+	}
+
+	private void setChestLoot(WorldGenLevel level, BoundingBox chunkBox, RandomSource random) {
+		BoundingBox bb = this.getBoundingBox();
+		int minX = Math.max(bb.minX(), chunkBox.minX());
+		int minY = bb.minY();
+		int minZ = Math.max(bb.minZ(), chunkBox.minZ());
+		int maxX = Math.min(bb.maxX(), chunkBox.maxX());
+		int maxY = bb.maxY();
+		int maxZ = Math.min(bb.maxZ(), chunkBox.maxZ());
+
+		for (int x = minX; x <= maxX; x++) {
+			for (int y = minY; y <= maxY; y++) {
+				for (int z = minZ; z <= maxZ; z++) {
+					BlockPos pos = new BlockPos(x, y, z);
+					BlockState state = level.getBlockState(pos);
+					if (state.is(Blocks.CHEST) || state.is(Blocks.TRAPPED_CHEST)) {
+						if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity container) {
+							container.setLootTable(LOOT_TABLE, random.nextLong());
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void spawnInitialMobs(WorldGenLevel level, BoundingBox chunkBox, RandomSource random) {
+		if (!(level instanceof ServerLevelAccessor serverLevel)) return;
+
+		BoundingBox bb = this.getBoundingBox();
+		int centerX = (bb.minX() + bb.maxX()) / 2;
+		int centerZ = (bb.minZ() + bb.maxZ()) / 2;
+		int spawnY = bb.maxY() - 1;
+
+		if (!chunkBox.isInside(new BlockPos(centerX, spawnY, centerZ))) return;
+
+		try {
+			Witch witch = EntityTypes.WITCH.create(serverLevel.getLevel(), EntitySpawnReason.STRUCTURE);
+			if (witch != null) {
+				witch.setPersistenceRequired();
+				witch.snapTo(centerX + 0.5, spawnY, centerZ + 0.5,
+						random.nextFloat() * 360.0F, 0.0F);
+				serverLevel.addFreshEntityWithPassengers(witch);
+			}
+
+			spawnCatOnCraftingTable(serverLevel, level, chunkBox, random);
+		} catch (Exception e) {
+			ProjectWaterworld.LOGGER.warn("Failed to spawn initial witch hut mobs: {}", e.getMessage());
+		}
+	}
+
+	private void spawnCatOnCraftingTable(ServerLevelAccessor serverLevel, WorldGenLevel level,
+			BoundingBox chunkBox, RandomSource random) {
+		List<StructureTemplate.StructureBlockInfo> tables =
+				this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.CRAFTING_TABLE);
+
+		BlockPos tableTop = null;
+		for (StructureTemplate.StructureBlockInfo info : tables) {
+			if (chunkBox.isInside(info.pos())) {
+				tableTop = info.pos().above();
+				break;
+			}
+		}
+
+		if (tableTop == null) {
+			BoundingBox bb = this.getBoundingBox();
+			tableTop = new BlockPos((bb.minX() + bb.maxX()) / 2 + 1, bb.maxY() - 1, (bb.minZ() + bb.maxZ()) / 2);
+		}
+
+		Cat cat = EntityTypes.CAT.create(serverLevel.getLevel(), EntitySpawnReason.STRUCTURE);
+		if (cat != null) {
+			cat.snapTo(tableTop.getX() + 0.5, tableTop.getY(), tableTop.getZ() + 0.5, 0.0F, 0.0F);
+			cat.finalizeSpawn(serverLevel, level.getCurrentDifficultyAt(tableTop),
+					EntitySpawnReason.STRUCTURE, null);
+			cat.setPersistenceRequired();
+			cat.setTame(true, false);
+			cat.setOrderedToSit(true);
+			cat.setInSittingPose(true);
+			serverLevel.addFreshEntityWithPassengers(cat);
+		}
+	}
+}
