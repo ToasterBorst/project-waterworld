@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import waterworld.spawn.WaterworldSpawns;
+import waterworld.structure.PillagerOutpostShipSpawner;
 import waterworld.structure.WaterworldStructures;
 import waterworld.structure.WitchHutBoatSpawner;
 import waterworld.worldgen.WaterworldBiomeSources;
@@ -21,10 +22,11 @@ public class ProjectWaterworld implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	private final WitchHutBoatSpawner witchHutBoatSpawner = new WitchHutBoatSpawner();
+	private final PillagerOutpostShipSpawner pillagerOutpostShipSpawner = new PillagerOutpostShipSpawner();
 
 	@Override
 	public void onInitialize() {
-		LOGGER.info("Initializing Project Waterworld");
+		LOGGER.info("Initializing Waterworld");
 
 		Path configDir = FabricLoader.getInstance().getConfigDir();
 		WaterworldConfig.INSTANCE = WaterworldConfig.load(configDir);
@@ -38,9 +40,8 @@ public class ProjectWaterworld implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STOPPED.register(WaterworldDetection::onServerStopped);
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
-			for (var level : server.getAllLevels()) {
-				witchHutBoatSpawner.tick(level);
-			}
+			witchHutBoatSpawner.tick(server.overworld());
+			pillagerOutpostShipSpawner.tick(server.overworld());
 		});
 
 		try {

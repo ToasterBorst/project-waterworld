@@ -1,4 +1,4 @@
-# Testing Project Waterworld
+# Testing Waterworld
 
 Step-by-step guide to build, run, and verify the mod locally.
 
@@ -15,7 +15,7 @@ From the repository root in PowerShell (prefix scripts with `.\`):
 .\gradlew.bat build
 ```
 
-Success produces: `build\libs\project-waterworld-1.0.0.jar`
+Success produces: `build\libs\waterworld-26.2-1.0.0.jar`
 
 If dependencies fail:
 
@@ -63,26 +63,56 @@ Suggested seeds:
 |-------|-----|
 | Sea surface at Y=112 | Fly at Y=112; F3: water; no stone through surface |
 | Air above surface | Y=113–160: air only |
-| Seabed depth | Underwater: highest seabed roughly **Y=42–76** |
+| Seabed depth | Vanilla deep oceans preserved; land columns soft-faded into seabed hills ~**Y48–76** |
 | Biomes above water | F3 in air (Y>112): vanilla overworld biomes; beaches, stony shores, rivers, mushroom fields where seed places them |
 | Biomes at surface fuzz | F3 at Y=108–111: surface-layer biomes (matches sky column, not underwater ocean) |
-| Biomes at/below surface | F3 at Y<108: oceans and caves; vanilla land columns → non-deep ocean |
+| Biomes at/below surface | F3 at Y&lt;108: oceans (and caves only below Y=0); land/cave columns in the water band → non-deep ocean |
 | Sea-level water appearance | Swim at Y=112: water tint/fog/sky match surface biome (not underwater ocean) |
 | Datapack active | `/datapack list` — `project-waterworld` enabled |
-| Mod loaded | `logs/latest.log` — `Initializing Project Waterworld` |
+| Mod loaded | `logs/latest.log` — `Initializing Waterworld` |
 | No floating structures | Fly around surface; no villages/outposts/igloos above water |
-| Buried treasure on ocean floor | See [Buried treasure / treasure maps](#buried-treasure--treasure-maps) |
+| Buried treasure under beaches (seabed) | See [Buried treasure / treasure maps](#buried-treasure--treasure-maps) |
 | Trail ruins disabled | See [Trail ruins](#trail-ruins) |
 | Sea turtles | See [Sea turtles](#sea-turtles) |
 | Mod Menu (optional) | See [Mod Menu client UI](#mod-menu-client-ui) |
 
 ## 7. Testing mob spawns
 
-All spawn features are controlled by `config/project-waterworld.json`. Delete the file to regenerate defaults.
+All spawn features are controlled by `config/waterworld.properties`. Delete the file to regenerate defaults.
+
+### Ocean monuments (density + guardians)
+
+Monument XZ should match vanilla seed maps (same salt/spacing; biome surround uses vanilla overworld climate, not remapped underwater oceans). Compare with a seed-map tool, then:
+
+```
+/locate structure minecraft:monument
+```
+
+Inside a monument, guardians (and elders) must appear under **vanilla** rules — no wild day delay or spawn-chance gate. Outside monuments, wild guardians use the day ramp + chance in `waterworld.properties`.
+
+### Structure seed-map fidelity (all structures)
+
+Structure biome gates sample vanilla overworld climate at Y≈63. Compare a seed-map tool against:
+
+```
+/locate structure minecraft:shipwreck
+/locate structure minecraft:ocean_ruin_cold
+/locate structure minecraft:ruined_portal_ocean
+/locate structure minecraft:buried_treasure
+/locate structure minecraft:desert_pyramid
+/locate structure minecraft:jungle_temple
+/locate structure minecraft:trail_ruins
+/locate structure minecraft:swamp_hut
+/locate structure minecraft:pillager_outpost
+```
+
+Shipwrecks are the ocean (submerged) variant only — beached wrecks and land ruined portals are omitted because they would float on the Y=112 water plane. Ocean ruined portals stay on the seabed. Buried treasure uses vanilla beach biomes (chests still on the ocean floor under those columns).
+
+Seabed under flooded land should be ocean sand/gravel/stone — **not** dripstone-cave spikes (cave biomes only below Y=0).
 
 ### Wild guardians
 
-Guardians should spawn naturally in ocean biomes at low frequency (weight 1, compared to squid at ~5).
+Guardians should spawn naturally in ocean biomes at low frequency (weight 1, compared to squid at ~5), only after the configured day delay.
 
 ```
 /gamerule spawn_mobs true
@@ -193,7 +223,7 @@ Verify with several recipe types:
 - Bow/crossbow: bamboo in stick slots
 - Fishing rod: bamboo in stick slots
 
-Disable via config: set `bamboo_replaces_sticks` to `false` in `config/project-waterworld.json`.
+Disable via config: set `bamboo_replaces_sticks` to `false` in `config/waterworld.properties`.
 
 ### Bamboo rafts for mobs
 
@@ -245,13 +275,13 @@ The trader should steer away from the zombie. To test player approach, remove th
 
 ### Buried treasure / treasure maps
 
-Buried treasure should generate on the ocean floor (not beach-gated). Treasure maps from shipwrecks and ocean ruins should point at diggable chests.
+Buried treasure uses vanilla **beach** biomes (seed-map XZ) and still places on the **ocean floor** under those columns. Treasure maps from shipwrecks and ocean ruins should point at diggable chests.
 
 ```
 /locate structure minecraft:buried_treasure
 ```
 
-Should succeed and lead to a chest on the seabed. Optional end-to-end check:
+Should succeed and lead to a chest on the seabed under a beach column. Optional end-to-end check:
 
 1. Find a shipwreck map chest (`/locate structure minecraft:shipwreck`)
 2. Open the map; travel to the X and dig down through sand/gravel on the ocean floor
@@ -259,13 +289,13 @@ Should succeed and lead to a chest on the seabed. Optional end-to-end check:
 
 ### Trail ruins
 
-Trail ruins are disabled (gate biomes exist only in the air column).
+Trail ruins generate on the seabed (offset under the water plane, buried adaptation). Locate with:
 
 ```
 /locate structure minecraft:trail_ruins
 ```
 
-Should fail to find results.
+Dive to the marker; expect partially buried trail-ruin pieces on the ocean floor.
 
 ### Sea turtles
 
@@ -308,38 +338,38 @@ This depends on the 4-block fuzz buffer (Y 108–111 treated as surface layer); 
 Requires [Mod Menu](https://modrinth.com/mod/modmenu) installed in `run/mods/` (or your client `mods/` folder) **in addition to** this mod. The mod does not bundle Mod Menu.
 
 1. Launch client with both mods
-2. Mod list: **Project Waterworld** shows the mod icon, summary, description, and GitHub releases link
-3. Open config from the mod list — `WaterworldConfigScreen` should list all `WaterworldConfig` toggles and save changes to `config/project-waterworld.json`
+2. Mod list: **Waterworld** shows the mod icon, summary, description, and GitHub releases link
+3. Open config from the mod list — `WaterworldConfigScreen` should list categorized `WaterworldConfig` options (activation as Auto/Always/Never cycle) and save changes to `config/waterworld.properties`
 
 Server join still works without the client mod; Mod Menu is optional convenience only.
 
-### Structure disabling
+### Structure substitutes & seabed structures
 
-Verify that land structures (pillager outposts, villages, igloos, desert pyramids, jungle temples, swamp huts, woodland mansions) do NOT generate. Use locate to confirm:
+Witch hut boats and pillager outpost ships replace the vanilla structures at the same IDs (sea surface). Desert pyramids, jungle temples, and trail ruins generate on the **seabed** (flooded) with vanilla seed-map XZ.
 
 ```
+/locate structure minecraft:swamp_hut
 /locate structure minecraft:pillager_outpost
-/locate structure minecraft:village_plains
-/locate structure minecraft:igloo
 /locate structure minecraft:desert_pyramid
 /locate structure minecraft:jungle_pyramid
-/locate structure minecraft:swamp_hut
-/locate structure minecraft:mansion
 /locate structure minecraft:trail_ruins
-```
-
-Land structures should fail. `trail_ruins` is explicitly disabled. Ocean structures (monuments, shipwrecks, ruins) should still generate:
-
-```
 /locate structure minecraft:monument
 /locate structure minecraft:shipwreck
 /locate structure minecraft:ocean_ruin_warm
 ```
 
+Still disabled (should fail):
+
+```
+/locate structure minecraft:village_plains
+/locate structure minecraft:igloo
+/locate structure minecraft:mansion
+```
+
 ## 8. Dedicated server (optional)
 
 1. Fabric server for **26.2** with Loader **0.19.3+**
-2. Copy `build/libs/project-waterworld-1.0.0.jar` to `mods/`
+2. Copy `build/libs/waterworld-26.2-1.0.0.jar` to `mods/`
 3. `server.properties`:
 
    ```properties

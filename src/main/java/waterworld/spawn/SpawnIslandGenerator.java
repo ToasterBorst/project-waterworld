@@ -6,12 +6,12 @@ import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 import waterworld.WaterworldConstants;
+import waterworld.worldgen.WaterworldBiomeTags;
 
 /**
  * Generates a spawn island as 2-3 distinct steep peaks (flooded seamounts).
@@ -42,9 +42,8 @@ public final class SpawnIslandGenerator {
 		SimplexNoise detailNoise = new SimplexNoise(RandomSource.create(seed ^ NOISE_SALT_DETAIL));
 
 		Holder<Biome> biome = level.getBiome(new BlockPos(centerX, seaLevel - 10, centerZ));
-		boolean isCold = biome.is(Biomes.COLD_OCEAN) || biome.is(Biomes.DEEP_COLD_OCEAN)
-				|| biome.is(Biomes.FROZEN_OCEAN) || biome.is(Biomes.DEEP_FROZEN_OCEAN);
-		boolean isWarmOcean = biome.is(Biomes.WARM_OCEAN);
+		boolean isCold = biome.is(WaterworldBiomeTags.SPAWN_ISLAND_COLD);
+		boolean isWarmOcean = biome.is(WaterworldBiomeTags.SPAWN_ISLAND_WARM);
 
 		// Primary peak: barely breaches surface (1 block above water)
 		double p0OffX = warpNoise.getValue(centerX * 0.001, centerZ * 0.001) * 4.0;

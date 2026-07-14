@@ -1,12 +1,14 @@
-# Project Waterworld
+# Waterworld
 
 Fabric mod for Minecraft **26.2** that generates a true water world: a flat ocean surface at **Y=112**, natural seabed below, and vanilla overworld biome distribution in the air column above the water so players can build and get normal farming, mob, and feature behavior.
+
+Inspired by Skyblock, except you're Kevin Costner. Waterworld. Get it? The world is water. Flooded.
 
 Server-side only for joining multiplayer — clients do not need the mod installed to connect. Installing the mod **client-side** (optionally with [Mod Menu](https://modrinth.com/mod/modmenu)) adds an in-game config screen; it is not required for gameplay.
 
 ## Features
 
-- **Waterworld terrain** — Endless ocean with configurable sea level, vanilla biomes above water (beaches, stony shores, rivers, and mushroom fields appear where the seed places them)
+- **Waterworld terrain** — Endless ocean at sea level Y=112, vanilla biomes above water (beaches, stony shores, rivers, and mushroom fields appear where the seed places them)
 - **Bamboo as sticks** — Bamboo can substitute for sticks in any crafting recipe
 - **Wild guardian spawns** — Guardians spawn naturally in ocean biomes at low frequency
 - **Drowned guardian riders** — Wild guardians can spawn with mounted drowned (trident chance)
@@ -18,11 +20,11 @@ Server-side only for joining multiplayer — clients do not need the mod install
 - **Boat AI** — Illagers steer toward targets and attack from boats; traders approach players and flee threats; intelligent mobs dismount on land
 - **Sea turtles** — Turtles spawn naturally on warm/lukewarm ocean seabed sand
 - **Treasure maps** — Buried treasure generates on the ocean floor so shipwreck/ruin maps point at real chests (Heart of the Sea / conduit progression)
-- **Land structure removal** — Villages, outposts, igloos, trail ruins, and other land structures disabled via built-in datapack
+- **Land structure removal** — Villages, mansions, igloos disabled; desert pyramids, jungle temples, and trail ruins generate flooded on the seabed; swamp huts / outposts are boat/ship substitutes
 - **Mod Menu integration** — Mod icon, description, and links when Mod Menu is installed client-side; in-game config screen for all toggles
 - **Mod icon** — Shown in the mod list when installed client-side
 
-All features are individually toggleable via `config/project-waterworld.json` (or the in-game config screen with Mod Menu).
+All features are individually toggleable via `config/waterworld.properties` (or the in-game config screen with Mod Menu).
 
 ## Known trade-offs
 
@@ -33,7 +35,7 @@ All features are individually toggleable via `config/project-waterworld.json` (o
 ## Installation
 
 1. Install [Fabric Loader](https://fabricmc.net/use/) **0.19.3+** for Minecraft **26.2**
-2. Download `project-waterworld-1.0.0.jar` and place it in your `mods/` folder
+2. Download `waterworld-26.2-1.0.0.jar` and place it in your `mods/` folder
 3. Launch the game, create a new world with world type **Waterworld**
 
 For dedicated servers, set in `server.properties`:
@@ -46,7 +48,9 @@ Optional: install [Mod Menu](https://modrinth.com/mod/modmenu) on the client for
 
 ## Configuration
 
-On first launch, a config file is generated at `config/project-waterworld.json` with all defaults. Edit it to toggle features or tune spawn rates. With Mod Menu installed client-side, the same options are available from the mod list.
+On first launch, a config file is generated at `config/waterworld.properties` with commented defaults grouped by feature (activation, spawn, guardians, turtles, illagers, traders, boats, crafting). Edit it to toggle features or tune spawn rates. With Mod Menu installed client-side, the same options are available from the mod list (activation mode is a cycle toggle: Auto / Always / Never).
+
+Legacy `config/project-waterworld.properties` and `config/project-waterworld.json` are migrated automatically on load.
 
 ## Documentation
 

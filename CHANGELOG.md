@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Structures — seed-map fidelity
+- Structure biome gates (`isValidBiome` + monument `getBiomesWithin`) sample vanilla overworld climate at Y≈63 so XZ matches seed maps
+- Ocean-only ruined portals and shipwrecks (land/beached variants omitted — they float on the water plane)
+- Buried treasure uses vanilla beach biomes (chests on ocean floor under beach columns)
+- Monument guardians ignore wild guardian day delay / chance
+- Mid-depth cave biomes no longer paint the seabed (dripstone/lush); caves kept only below Y=0
+
 ## 1.0.0 — Initial Release (unreleased)
 
 ### World Generation
@@ -30,7 +39,7 @@
 - Swim-to-land fallback for dismounted mobs in water
 
 ### Configuration
-- All features individually toggleable via `config/project-waterworld.json`
+- All features individually toggleable via `config/waterworld.properties`
 - Server-side only for joining — clients do not need the mod installed
 
 ---

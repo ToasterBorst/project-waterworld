@@ -113,25 +113,25 @@ public class WitchHutBoatPiece extends TemplateStructurePiece {
 	}
 
 	private void setChestLoot(WorldGenLevel level, BoundingBox chunkBox, RandomSource random) {
-		BoundingBox bb = this.getBoundingBox();
-		int minX = Math.max(bb.minX(), chunkBox.minX());
-		int minY = bb.minY();
-		int minZ = Math.max(bb.minZ(), chunkBox.minZ());
-		int maxX = Math.min(bb.maxX(), chunkBox.maxX());
-		int maxY = bb.maxY();
-		int maxZ = Math.min(bb.maxZ(), chunkBox.maxZ());
+		List<StructureTemplate.StructureBlockInfo> chests =
+				this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.CHEST);
 
-		for (int x = minX; x <= maxX; x++) {
-			for (int y = minY; y <= maxY; y++) {
-				for (int z = minZ; z <= maxZ; z++) {
-					BlockPos pos = new BlockPos(x, y, z);
-					BlockState state = level.getBlockState(pos);
-					if (state.is(Blocks.CHEST) || state.is(Blocks.TRAPPED_CHEST)) {
-						if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity container) {
-							container.setLootTable(LOOT_TABLE, random.nextLong());
-						}
-					}
-				}
+		for (StructureTemplate.StructureBlockInfo info : chests) {
+			BlockPos pos = info.pos();
+			if (!chunkBox.isInside(pos)) continue;
+			if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity container) {
+				container.setLootTable(LOOT_TABLE, random.nextLong());
+			}
+		}
+
+		List<StructureTemplate.StructureBlockInfo> trappedChests =
+				this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.TRAPPED_CHEST);
+
+		for (StructureTemplate.StructureBlockInfo info : trappedChests) {
+			BlockPos pos = info.pos();
+			if (!chunkBox.isInside(pos)) continue;
+			if (level.getBlockEntity(pos) instanceof RandomizableContainerBlockEntity container) {
+				container.setLootTable(LOOT_TABLE, random.nextLong());
 			}
 		}
 	}

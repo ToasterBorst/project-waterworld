@@ -9,17 +9,10 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
-import net.minecraft.world.entity.monster.Ravager;
-import net.minecraft.world.entity.monster.Witch;
-import net.minecraft.world.entity.monster.illager.Evoker;
-import net.minecraft.world.entity.monster.illager.Pillager;
-import net.minecraft.world.entity.monster.illager.Vindicator;
-import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
-import net.minecraft.world.entity.animal.equine.TraderLlama;
-import net.minecraft.world.level.biome.Biomes;
 import waterworld.ProjectWaterworld;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldDetection;
+import waterworld.worldgen.WaterworldBiomeTags;
 
 public final class WaterworldSpawns {
 	private WaterworldSpawns() {
@@ -50,7 +43,7 @@ public final class WaterworldSpawns {
 		if (!config.turtleOceanSpawns) return;
 
 		BiomeModifications.addSpawn(
-			BiomeSelectors.includeByKey(Biomes.WARM_OCEAN, Biomes.LUKEWARM_OCEAN),
+			BiomeSelectors.tag(WaterworldBiomeTags.TURTLE_SPAWNS),
 			MobCategory.CREATURE,
 			EntityTypes.TURTLE,
 			config.turtleSpawnWeight, 2, 5
@@ -63,41 +56,28 @@ public final class WaterworldSpawns {
 			if (!WaterworldDetection.isActive()) return;
 			if (!(entity instanceof Mob mob)) return;
 
-			WaterworldConfig config = WaterworldConfig.INSTANCE;
-			injectBoatGoals(mob, config);
+			injectBoatGoals(mob);
 			injectDoorGoals(mob);
 		});
 	}
 
-	private static void injectBoatGoals(Mob mob, WaterworldConfig config) {
-		boolean canDismount = mob instanceof Pillager
-				|| mob instanceof Vindicator
-				|| mob instanceof Evoker
-				|| mob instanceof Witch
-				|| mob instanceof Ravager
-				|| mob instanceof WanderingTrader
-				|| mob instanceof TraderLlama;
-
-		boolean canPilot = mob instanceof Pillager
-				|| mob instanceof Vindicator
-				|| mob instanceof Evoker
-				|| mob instanceof Witch
-				|| mob instanceof WanderingTrader;
-
+	private static void injectBoatGoals(Mob mob) {
+		boolean canDismount = WaterworldMobTypes.canDismountBoats(mob);
+		boolean canPilot = WaterworldMobTypes.canPilotBoats(mob);
 		if (!canDismount && !canPilot) return;
-
 		BoatSpawnHelper.addBoatAI(mob, canPilot);
 	}
 
 	private static void injectDoorGoals(Mob mob) {
-		boolean shouldOpenDoors = mob instanceof Witch
-				|| mob instanceof Pillager
-				|| mob instanceof Vindicator
-				|| mob instanceof Evoker;
-
-		if (!shouldOpenDoors) return;
+		if (!WaterworldMobTypes.shouldOpenDoors(mob)) return;
+		if (hasDoorGoal(mob)) return;
 
 		mob.getNavigation().setCanOpenDoors(true);
 		mob.goalSelector.addGoal(3, new OpenDoorGoal(mob, true));
+	}
+
+	private static boolean hasDoorGoal(Mob mob) {
+		return mob.goalSelector.getAvailableGoals().stream()
+				.anyMatch(wg -> wg.getGoal() instanceof OpenDoorGoal);
 	}
 }

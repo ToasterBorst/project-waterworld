@@ -8,10 +8,6 @@ import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.entity.monster.Witch;
-import net.minecraft.world.entity.monster.illager.Evoker;
-import net.minecraft.world.entity.monster.illager.Pillager;
-import net.minecraft.world.entity.monster.illager.Vindicator;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import waterworld.ai.BoatApproachPlayerGoal;
 import waterworld.ai.BoatCombatPilotGoal;
@@ -108,12 +104,7 @@ public final class BoatSpawnHelper {
 
 		if (!canPilot || !config.mobsCanPilotBoats) return;
 
-		boolean isHostile = mob instanceof Pillager
-				|| mob instanceof Vindicator
-				|| mob instanceof Evoker
-				|| mob instanceof Witch;
-
-		if (isHostile) {
+		if (WaterworldMobTypes.isHostileBoatPilot(mob)) {
 			mob.goalSelector.addGoal(0, new BoatCombatPilotGoal(mob));
 			mob.goalSelector.addGoal(1, new PilotBoatGoal(mob));
 		} else if (mob instanceof WanderingTrader) {

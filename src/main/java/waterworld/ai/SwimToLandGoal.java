@@ -84,21 +84,23 @@ public class SwimToLandGoal extends Goal {
 		BlockPos nearest = null;
 		double nearestDistSq = Double.MAX_VALUE;
 
-		for (int dx = -SCAN_RANGE; dx <= SCAN_RANGE; dx += 2) {
-			for (int dz = -SCAN_RANGE; dz <= SCAN_RANGE; dz += 2) {
-				for (int dy = -2; dy <= 3; dy++) {
-					BlockPos check = origin.offset(dx, dy, dz);
-					BlockState below = level.getBlockState(check.below());
-					BlockState at = level.getBlockState(check);
-					BlockState above = level.getBlockState(check.above());
-					if (below.isSolid() && !at.isSolid() && !above.isSolid()) {
-						double distSq = check.distSqr(origin);
-						if (distSq < nearestDistSq) {
-							nearestDistSq = distSq;
-							nearest = check;
-						}
-						break;
+		for (int attempt = 0; attempt < 20; attempt++) {
+			int dx = mob.getRandom().nextInt(SCAN_RANGE * 2 + 1) - SCAN_RANGE;
+			int dz = mob.getRandom().nextInt(SCAN_RANGE * 2 + 1) - SCAN_RANGE;
+			BlockPos column = origin.offset(dx, 0, dz);
+
+			for (int dy = -2; dy <= 3; dy++) {
+				BlockPos check = column.atY(origin.getY() + dy);
+				BlockState below = level.getBlockState(check.below());
+				BlockState at = level.getBlockState(check);
+				BlockState above = level.getBlockState(check.above());
+				if (below.isSolid() && !at.isSolid() && !above.isSolid()) {
+					double distSq = check.distSqr(origin);
+					if (distSq < nearestDistSq) {
+						nearestDistSq = distSq;
+						nearest = check;
 					}
+					break;
 				}
 			}
 		}

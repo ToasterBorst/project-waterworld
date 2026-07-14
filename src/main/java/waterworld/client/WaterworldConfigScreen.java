@@ -27,6 +27,7 @@ public class WaterworldConfigScreen extends Screen {
 	private static final int LIST_TOP = 32;
 	private static final int FOOTER_HEIGHT = 36;
 	private static final int TOOLTIP_WIDTH = 250;
+	private static final List<String> ACTIVATION_MODES = List.of("auto", "always", "never");
 
 	private final Screen parent;
 	private final Map<AbstractWidget, Component> tooltips = new IdentityHashMap<>();
@@ -36,7 +37,7 @@ public class WaterworldConfigScreen extends Screen {
 	private ConfigOptionsList optionList;
 
 	public WaterworldConfigScreen(Screen parent) {
-		super(Component.literal("Project Waterworld Configuration"));
+		super(Component.translatable("config.project-waterworld.title"));
 		this.parent = parent;
 	}
 
@@ -52,44 +53,10 @@ public class WaterworldConfigScreen extends Screen {
 		optionList = new ConfigOptionsList(this.minecraft, this.width - 40, listHeight, LIST_TOP, ROW_HEIGHT);
 		optionList.setX(20);
 
-		addSection("Activation");
-		addStringOption("Activation Mode", config.activationMode, "auto",
-				"Controls when mod effects are active. auto = only in Waterworld worlds, always = all worlds, never = disabled.",
-				v -> config.activationMode = v);
+		addSectionKey("config.project-waterworld.section.activation");
+		addActivationModeOption();
 
-		addSection("Features");
-		addBoolOption("Bamboo Replaces Sticks", config.bambooReplacesSticks,
-				"Bamboo can substitute for sticks in any crafting recipe.",
-				v -> config.bambooReplacesSticks = v);
-		addBoolOption("Wild Guardian Spawns", config.wildGuardianSpawns,
-				"Guardians can spawn in open ocean water outside monuments.",
-				v -> config.wildGuardianSpawns = v);
-		addBoolOption("Drowned Ride Guardians", config.drownedRideGuardians,
-				"Drowned riders appear on wild guardians with a configurable trident chance.",
-				v -> config.drownedRideGuardians = v);
-		addBoolOption("Drowned Can Go On Land", config.drownedCanGoOnLand,
-				"Drowned can roam on land instead of returning to water.",
-				v -> config.drownedCanGoOnLand = v);
-		addBoolOption("Pillager Armor", config.pillagerArmor,
-				"Illagers spawn with armor during patrols and raids.",
-				v -> config.pillagerArmor = v);
-		addBoolOption("Mobs Can Exit Boats", config.mobsCanExitBoats,
-				"Intelligent mobs can exit boats when they reach land.",
-				v -> config.mobsCanExitBoats = v);
-		addBoolOption("Mobs Can Pilot Boats", config.mobsCanPilotBoats,
-				"Illagers and wandering traders can steer boats.",
-				v -> config.mobsCanPilotBoats = v);
-		addBoolOption("Wandering Trader Boats", config.wanderingTraderBoats,
-				"Wandering traders spawn in boats at sea with one llama.",
-				v -> config.wanderingTraderBoats = v);
-		addBoolOption("Ocean Pillager Patrols", config.oceanPillagerPatrols,
-				"Pillager patrols and raids spawn in boats on water.",
-				v -> config.oceanPillagerPatrols = v);
-		addBoolOption("Turtle Ocean Spawns", config.turtleOceanSpawns,
-				"Turtles spawn naturally in warm and lukewarm oceans.",
-				v -> config.turtleOceanSpawns = v);
-
-		addSection("Spawn Options");
+		addSectionKey("config.project-waterworld.section.player_spawn");
 		addStringOption("Spawn Ocean Biome", config.spawnOceanBiome, "warm_ocean",
 				"Force spawn in a specific ocean biome. Leave empty to disable. Examples: warm_ocean, lukewarm_ocean, deep_ocean",
 				v -> config.spawnOceanBiome = v);
@@ -100,22 +67,65 @@ public class WaterworldConfigScreen extends Screen {
 				"Give players a bamboo chest raft with starter items on first spawn.",
 				v -> config.spawnGear = v);
 
-		addSection("Tunable Values");
+		addSectionKey("config.project-waterworld.section.guardians");
+		addBoolOption("Wild Guardian Spawns", config.wildGuardianSpawns,
+				"Guardians can spawn in open ocean water outside monuments.",
+				v -> config.wildGuardianSpawns = v);
 		addIntOption("Guardian Spawn Weight", config.guardianSpawnWeight,
 				"Spawn weight for wild guardians. Squid is ~5, keep very low.",
 				v -> config.guardianSpawnWeight = v);
-		addIntOption("Turtle Spawn Weight", config.turtleSpawnWeight,
-				"Spawn weight for ocean turtles.",
-				v -> config.turtleSpawnWeight = v);
 		addDoubleOption("Guardian Spawn Chance", config.guardianSpawnChance,
 				"Chance a guardian spawn attempt succeeds (0.0-1.0, lower = rarer).",
 				v -> config.guardianSpawnChance = v);
+		addIntOption("Guardian Min Days", config.guardianMinDays,
+				"Days before wild guardians start spawning.",
+				v -> config.guardianMinDays = v);
+		addIntOption("Guardian Full Strength Days", config.guardianFullStrengthDays,
+				"Day guardian spawn chance reaches its full configured value.",
+				v -> config.guardianFullStrengthDays = v);
+		addBoolOption("Drowned Ride Guardians", config.drownedRideGuardians,
+				"Drowned riders appear on wild guardians with a configurable trident chance.",
+				v -> config.drownedRideGuardians = v);
 		addDoubleOption("Drowned Rider Chance", config.drownedRiderChance,
 				"Chance a wild guardian spawns with a drowned rider (0.0-1.0).",
 				v -> config.drownedRiderChance = v);
+		addIntOption("Drowned Rider Min Days", config.drownedRiderMinDays,
+				"Days before drowned riders appear on guardians.",
+				v -> config.drownedRiderMinDays = v);
+		addIntOption("Rider Full Strength Days", config.drownedRiderFullStrengthDays,
+				"Day drowned rider chance reaches its full configured value.",
+				v -> config.drownedRiderFullStrengthDays = v);
 		addDoubleOption("Trident Rider Chance", config.tridentRiderChance,
 				"Chance a drowned rider carries a trident (0.0-1.0).",
 				v -> config.tridentRiderChance = v);
+		addIntOption("Trident Drowned Min Days", config.tridentDrownedMinDays,
+				"Days before drowned can spawn with tridents. 0 = immediate.",
+				v -> config.tridentDrownedMinDays = v);
+		addBoolOption("Drowned Can Go On Land", config.drownedCanGoOnLand,
+				"Drowned can roam on land instead of returning to water.",
+				v -> config.drownedCanGoOnLand = v);
+
+		addSectionKey("config.project-waterworld.section.turtles");
+		addBoolOption("Turtle Ocean Spawns", config.turtleOceanSpawns,
+				"Turtles spawn naturally in biomes tagged #project-waterworld:turtle_spawns.",
+				v -> config.turtleOceanSpawns = v);
+		addIntOption("Turtle Spawn Weight", config.turtleSpawnWeight,
+				"Spawn weight for ocean turtles.",
+				v -> config.turtleSpawnWeight = v);
+
+		addSectionKey("config.project-waterworld.section.illagers");
+		addBoolOption("Ocean Pillager Patrols", config.oceanPillagerPatrols,
+				"Pillager patrols and raids spawn in boats on water.",
+				v -> config.oceanPillagerPatrols = v);
+		addIntOption("Patrol Min Days", config.patrolMinDays,
+				"Days before pillager patrols begin.",
+				v -> config.patrolMinDays = v);
+		addIntOption("Patrol Full Strength Days", config.patrolFullStrengthDays,
+				"Day patrol frequency reaches full rate.",
+				v -> config.patrolFullStrengthDays = v);
+		addBoolOption("Pillager Armor", config.pillagerArmor,
+				"Illagers spawn with armor during patrols and raids.",
+				v -> config.pillagerArmor = v);
 		addDoubleOption("Pillager Armor Chance", config.pillagerArmorChance,
 				"Base chance per armor piece for illagers (0.0-1.0).",
 				v -> config.pillagerArmorChance = v);
@@ -123,34 +133,29 @@ public class WaterworldConfigScreen extends Screen {
 				"Whether armor tier scales with the world difficulty setting.",
 				v -> config.armorScalesWithDifficulty = v);
 
-		addSection("Difficulty Scaling (days)");
-		addIntOption("Trident Drowned Min Days", config.tridentDrownedMinDays,
-				"Days before drowned can spawn with tridents. 0 = immediate.",
-				v -> config.tridentDrownedMinDays = v);
-		addIntOption("Guardian Min Days", config.guardianMinDays,
-				"Days before wild guardians start spawning.",
-				v -> config.guardianMinDays = v);
-		addIntOption("Guardian Full Strength Days", config.guardianFullStrengthDays,
-				"Day guardian spawn chance reaches its full configured value.",
-				v -> config.guardianFullStrengthDays = v);
-		addIntOption("Patrol Min Days", config.patrolMinDays,
-				"Days before pillager patrols begin.",
-				v -> config.patrolMinDays = v);
-		addIntOption("Patrol Full Strength Days", config.patrolFullStrengthDays,
-				"Day patrol frequency reaches full rate.",
-				v -> config.patrolFullStrengthDays = v);
+		addSectionKey("config.project-waterworld.section.traders");
+		addBoolOption("Wandering Trader Boats", config.wanderingTraderBoats,
+				"Wandering traders spawn in boats at sea with one llama.",
+				v -> config.wanderingTraderBoats = v);
 		addIntOption("Wandering Trader Min Days", config.wanderingTraderMinDays,
 				"Days before wandering traders appear.",
 				v -> config.wanderingTraderMinDays = v);
 		addIntOption("Trader Full Strength Days", config.wanderingTraderFullStrengthDays,
 				"Day wandering trader frequency reaches full rate.",
 				v -> config.wanderingTraderFullStrengthDays = v);
-		addIntOption("Drowned Rider Min Days", config.drownedRiderMinDays,
-				"Days before drowned riders appear on guardians.",
-				v -> config.drownedRiderMinDays = v);
-		addIntOption("Rider Full Strength Days", config.drownedRiderFullStrengthDays,
-				"Day drowned rider chance reaches its full configured value.",
-				v -> config.drownedRiderFullStrengthDays = v);
+
+		addSectionKey("config.project-waterworld.section.boats");
+		addBoolOption("Mobs Can Exit Boats", config.mobsCanExitBoats,
+				"Intelligent mobs can exit boats when they reach land.",
+				v -> config.mobsCanExitBoats = v);
+		addBoolOption("Mobs Can Pilot Boats", config.mobsCanPilotBoats,
+				"Illagers and wandering traders can steer boats.",
+				v -> config.mobsCanPilotBoats = v);
+
+		addSectionKey("config.project-waterworld.section.crafting");
+		addBoolOption("Bamboo Replaces Sticks", config.bambooReplacesSticks,
+				"Bamboo can substitute for sticks in any crafting recipe.",
+				v -> config.bambooReplacesSticks = v);
 
 		this.addWidget(optionList);
 
@@ -187,6 +192,7 @@ public class WaterworldConfigScreen extends Screen {
 		for (Runnable applier : appliers) {
 			applier.run();
 		}
+		config.activationMode = WaterworldConfig.normalizeActivationMode(config.activationMode);
 		config.save(configDir);
 		WaterworldConfig.INSTANCE = config;
 		this.minecraft.gui.setScreen(parent);
@@ -197,8 +203,29 @@ public class WaterworldConfigScreen extends Screen {
 		this.minecraft.gui.setScreen(parent);
 	}
 
-	private void addSection(String title) {
-		optionList.add(optionList.createSection(Component.literal(title)).asEntry());
+	private void addSectionKey(String translationKey) {
+		optionList.add(optionList.createSection(Component.translatable(translationKey)).asEntry());
+	}
+
+	private void addActivationModeOption() {
+		String initial = WaterworldConfig.normalizeActivationMode(config.activationMode);
+		CycleButton<String> button = CycleButton.<String>builder(this::activationLabel, initial)
+				.withValues(ACTIVATION_MODES)
+				.create(0, 0, 120, 20, Component.translatable("config.project-waterworld.option.activation_mode"),
+						(btn, val) -> {});
+		tooltips.put(button, Component.literal(
+				"Auto = only in Waterworld worlds. Always = all worlds. Never = disabled (worldgen only)."));
+		appliers.add(() -> config.activationMode = button.getValue());
+		optionList.add(optionList.createOption(
+				Component.translatable("config.project-waterworld.option.activation_mode"), button).asEntry());
+	}
+
+	private Component activationLabel(String mode) {
+		return switch (mode) {
+			case "always" -> Component.translatable("config.project-waterworld.activation.always");
+			case "never" -> Component.translatable("config.project-waterworld.activation.never");
+			default -> Component.translatable("config.project-waterworld.activation.auto");
+		};
 	}
 
 	private void addBoolOption(String label, boolean value, String tooltip, BoolConsumer setter) {

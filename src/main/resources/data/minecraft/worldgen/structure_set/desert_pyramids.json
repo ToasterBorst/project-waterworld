@@ -5,5 +5,10 @@
     "separation": 8,
     "spacing": 32
   },
-  "structures": []
+  "structures": [
+    {
+      "structure": "minecraft:desert_pyramid",
+      "weight": 1
+    }
+  ]
 }

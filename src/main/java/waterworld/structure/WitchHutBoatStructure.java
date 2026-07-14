@@ -3,16 +3,13 @@ package waterworld.structure;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import waterworld.ProjectWaterworld;
 
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -29,12 +26,6 @@ public class WitchHutBoatStructure extends Structure {
 
 	public WitchHutBoatStructure(StructureSettings settings) {
 		super(settings);
-		Map<MobCategory, StructureSpawnOverride> overrides = settings.spawnOverrides();
-		ProjectWaterworld.LOGGER.info("WitchHutBoat spawn_overrides: {}", overrides.isEmpty() ? "EMPTY" : overrides.keySet());
-		for (var entry : overrides.entrySet()) {
-			ProjectWaterworld.LOGGER.info("  {} -> {} entries", entry.getKey(),
-					entry.getValue().spawns().unwrap().size());
-		}
 	}
 
 	@Override

@@ -29,8 +29,8 @@ flowchart TB
 | Component | Owns |
 |-----------|------|
 | **Datapack** (`data/project-waterworld/`) | World preset, noise settings (sea level, density caps, surface rules), UI tag for normal presets |
-| **Datapack overrides** (`data/minecraft/`) | Buried-treasure biome gate (`#minecraft:is_ocean`); empty trail-ruins structure set |
-| **Mod Java** | `WaterworldBiomeSource` codec, builtin pack registration, mob/spawn mixins, optional Mod Menu client entrypoint |
+| **Datapack overrides** (`data/minecraft/`) | Buried-treasure ocean gate; structure sets (emptied villages/mansions/…; restored pyramids/temples/trail ruins; hut/outpost substitutes); trail ruins height offset |
+| **Mod Java** | `WaterworldBiomeSource`, structure types/pieces, seabed settle + flood mixins, spawn/boat mixins, optional Mod Menu |
 | **Mod Java (client, optional)** | `WaterworldModMenu` + `WaterworldConfigScreen` — in-game config when Mod Menu is installed (`compileOnly` dependency; no runtime requirement) |
 | **Vanilla** | Chunk noise, aquifers, ore, carving (tuned via JSON) |
 
@@ -43,9 +43,11 @@ flowchart TB
 | Layer | Block Y | Rule |
 |-------|---------|------|
 | **Surface** | ≥ sea level − 4 (fuzz buffer) | Keep land, coast, river, and mushroom-field biomes verbatim. Replace only **ocean-tagged** biomes with a climate-matched inland biome (continentalness raised to −0.10; other climate params preserved). |
-| **Underwater** | &lt; sea level − 4 | Keep ocean, cave, and underground biomes verbatim. Replace vanilla **land** columns with a climate-matched **non-deep** ocean biome (continentalness clamped to [−0.45, −0.20]) so monuments and deep-ocean spawns stay out of columns that are land in the vanilla seed. Genuine vanilla oceans keep their deep variants. |
+| **Underwater** | &lt; sea level − 4 | Keep **ocean** biomes verbatim. Remap vanilla land **and** mid-depth cave/underground biomes to a climate-matched **non-deep** ocean (continentalness [−0.45, −0.20]) so the seabed stays ocean-featured (no dripstone-cave floors under continents). Genuine vanilla oceans keep their deep variants. Cave biomes are kept only below **Y=0**. |
 
 Sea level is **112** ([`WaterworldConstants.SEA_LEVEL`](../src/main/java/waterworld/WaterworldConstants.java)).
+
+**Structure biome checks:** All structure placement biome gates sample the **vanilla overworld** climate at Y≈63 (no Waterworld remapping) — both `Structure.isValidBiome` and monument `getBiomesWithin`. That keeps XZ on vanilla seed maps while surface/underwater remapping still drives rendering and mobs.
 
 ### Fuzz buffer (intentional — do not remove)
 
@@ -64,13 +66,26 @@ Ocean: `minecraft:is_ocean`, `c:is_ocean`, `c:is_deep_ocean`. Cave/underground: 
 | Mods that **inject into the vanilla multi-noise parameter space** (add biomes to the overworld preset with standard tags) | **Works** — picked up by the wrapped overworld source and tag rules |
 | Mods that **replace the biome source** entirely (e.g. TerraBlender-style custom sources) | **Out of scope** — they bypass this world preset |
 
+### Opting a modded ocean biome into Waterworld edges
+
+Air-column / underwater remapping already follows `minecraft:is_ocean` / `c:is_*` tags. For edge features, add your biome id to the matching datapack tag under `data/project-waterworld/tags/worldgen/biome/` (or a datapack that appends to it):
+
+| Tag | Effect |
+|-----|--------|
+| `turtle_spawns` | Ocean turtle natural spawns + underwater sand spawn rules |
+| `seabed_sand` | Sand seabed surface rule |
+| `seabed_gravel` | Gravel seabed surface rule |
+| `spawn_island_cold` | Cold/frozen spawn-island materials |
+| `spawn_island_warm` | Warm spawn-island coral decoration |
+
 ## Terrain
 
 [`noise_settings/waterworld.json`](../src/main/resources/data/project-waterworld/worldgen/noise_settings/waterworld.json):
 
 - `sea_level`: **112**
-- `final_density`: capped so no solids at/above surface; seabed ceiling gradient (~Y 76)
-- Surface rules: vanilla ocean-floor materials underwater
+- Vanilla `overworld/depth` + `overworld/sloped_cheese` (preserves deep oceans)
+- Soft density fade **Y48→76** trims land tops into seabed hills under the water plane
+- `preliminary_surface` upper clamp ~80; climate surface accents (sand/sandstone/dirt) plus ocean sand/gravel tags
 
 ## Versioning
 

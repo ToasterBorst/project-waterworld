@@ -25,7 +25,7 @@ public final class WaterworldDetection {
 	 * In "always" mode this is forced true; in "never" mode it's forced false.
 	 */
 	public static void onServerStarted(MinecraftServer server) {
-		String mode = WaterworldConfig.INSTANCE.activationMode.trim().toLowerCase();
+		String mode = WaterworldConfig.normalizeActivationMode(WaterworldConfig.INSTANCE.activationMode);
 
 		activeForCurrentServer = switch (mode) {
 			case "always" -> true;
@@ -66,7 +66,7 @@ public final class WaterworldDetection {
 	 */
 	public static boolean isWaterworldLevel(ServerLevel level) {
 		if (level.dimension() != Level.OVERWORLD) return false;
-		String mode = WaterworldConfig.INSTANCE.activationMode.trim().toLowerCase();
+		String mode = WaterworldConfig.normalizeActivationMode(WaterworldConfig.INSTANCE.activationMode);
 		if ("always".equals(mode)) return true;
 		if ("never".equals(mode)) return false;
 		ChunkGenerator generator = level.getChunkSource().getGenerator();

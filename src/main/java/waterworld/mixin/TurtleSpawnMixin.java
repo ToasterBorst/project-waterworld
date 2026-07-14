@@ -8,7 +8,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.turtle.Turtle;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.TurtleEggBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,9 +15,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldDetection;
+import waterworld.worldgen.WaterworldBiomeTags;
 
 /**
- * Allows turtles to spawn on underwater sand in warm and lukewarm oceans.
+ * Allows turtles to spawn on underwater sand in biomes tagged #project-waterworld:turtle_spawns.
  */
 @Mixin(Turtle.class)
 public class TurtleSpawnMixin {
@@ -35,7 +35,7 @@ public class TurtleSpawnMixin {
 		if (!TurtleEggBlock.onSand(level, pos)) return;
 
 		Holder<Biome> biome = level.getBiome(pos);
-		if (biome.is(Biomes.WARM_OCEAN) || biome.is(Biomes.LUKEWARM_OCEAN)) {
+		if (biome.is(WaterworldBiomeTags.TURTLE_SPAWNS)) {
 			cir.setReturnValue(true);
 		}
 	}

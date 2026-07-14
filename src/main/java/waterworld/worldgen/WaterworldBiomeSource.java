@@ -29,9 +29,9 @@ import waterworld.WaterworldConstants;
  *       river, and mushroom-field biomes are kept exactly where the vanilla
  *       seed places them; only ocean-tagged biomes are replaced with a
  *       climate-matched inland biome.</li>
- *   <li><b>Underwater layer</b>: ocean, cave, and underground biomes are kept;
- *       everything else (vanilla land) is replaced with a climate-matched
- *       ocean biome from the non-deep ocean band.</li>
+ *   <li><b>Underwater layer</b>: ocean biomes are kept; vanilla land and
+ *       mid-depth cave biomes are replaced with a climate-matched non-deep
+ *       ocean. True underground cave biomes are kept only below Y=0.</li>
  * </ul>
  *
  * <p>Classification is tag-driven (vanilla {@code minecraft:is_ocean} plus the
@@ -68,6 +68,13 @@ public class WaterworldBiomeSource extends BiomeSource {
 	 */
 	private static final int BIOME_FUZZ_BUFFER = 4;
 
+	/**
+	 * Cave/underground biomes are only kept below this Y. At and above it
+	 * (water column + seabed), they are ocean-filled like land — otherwise
+	 * dripstone/lush cave features become the ocean floor under continents.
+	 */
+	private static final int CAVE_BIOME_CEILING_Y = 0;
+
 	private final MultiNoiseBiomeSource overworld;
 
 	public WaterworldBiomeSource(MultiNoiseBiomeSource overworld) {
@@ -96,12 +103,30 @@ public class WaterworldBiomeSource extends BiomeSource {
 			return this.overworld.getNoiseBiome(clampToInland(sampler.sample(quartX, quartY, quartZ)));
 		}
 
-		if (isOcean(biome) || isCaveOrUnderground(biome)) {
+		if (isOcean(biome)) {
+			return biome;
+		}
+		// Do not let dripstone/lush caves paint the seabed under flooded land.
+		if (isCaveOrUnderground(biome) && blockY < CAVE_BIOME_CEILING_Y) {
 			return biome;
 		}
 		return this.overworld.getNoiseBiome(clampToOcean(sampler.sample(quartX, quartY, quartZ)));
 	}
 
+	/**
+	 * Vanilla overworld biome at seed-map climate depth (Y≈63), with no
+	 * Waterworld surface/underwater remapping. Used by structure placement so
+	 * XZ matches vanilla seed maps.
+	 */
+	public Holder<Biome> sampleVanillaOverworldAtSeedMapDepth(int quartX, int quartZ, Climate.Sampler sampler) {
+		return this.overworld.getNoiseBiome(quartX, QuartPos.fromBlock(63), quartZ, sampler);
+	}
+
+	/**
+	 * Structure placement (notably ocean monuments) queries biomes at sea level.
+	 * Sampling Waterworld's remapped layers would diverge from seed maps.
+	 * Sample vanilla overworld climate at Y≈63 instead.
+	 */
 	@Override
 	public Set<Holder<Biome>> getBiomesWithin(int blockX, int blockY, int blockZ, int blockRadius, Climate.Sampler sampler) {
 		if (blockY > WaterworldConstants.SEA_LEVEL) {
@@ -111,12 +136,11 @@ public class WaterworldBiomeSource extends BiomeSource {
 		int maxQX = QuartPos.fromBlock(blockX + blockRadius);
 		int minQZ = QuartPos.fromBlock(blockZ - blockRadius);
 		int maxQZ = QuartPos.fromBlock(blockZ + blockRadius);
-		int quartY = QuartPos.fromBlock(blockY);
 
 		Set<Holder<Biome>> biomes = new HashSet<>();
 		for (int qx = minQX; qx <= maxQX; qx++) {
 			for (int qz = minQZ; qz <= maxQZ; qz++) {
-				biomes.add(this.getNoiseBiome(qx, quartY, qz, sampler));
+				biomes.add(sampleVanillaOverworldAtSeedMapDepth(qx, qz, sampler));
 			}
 		}
 		return biomes;

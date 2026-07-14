@@ -5,5 +5,10 @@
     "separation": 8,
     "spacing": 34
   },
-  "structures": []
+  "structures": [
+    {
+      "structure": "minecraft:trail_ruins",
+      "weight": 1
+    }
+  ]
 }

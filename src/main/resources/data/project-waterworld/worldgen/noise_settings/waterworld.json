@@ -93,11 +93,11 @@
                 "argument2": {
                   "type": "minecraft:mul",
                   "argument1": {
-                    "type": "minecraft:y_clamped_gradient",
-                    "from_value": 1.0,
-                    "from_y": 16,
-                    "to_value": 0.0,
-                    "to_y": 68
+          "type": "minecraft:y_clamped_gradient",
+          "from_y": 48,
+          "to_y": 76,
+          "from_value": 1.0,
+          "to_value": 0.0
                   },
                   "argument2": {
                     "type": "minecraft:add",
@@ -114,20 +114,7 @@
                             "type": "minecraft:quarter_negative",
                             "argument": {
                               "type": "minecraft:mul",
-                              "argument1": {
-                                "type": "minecraft:add",
-                                "argument1": {
-                                  "type": "minecraft:y_clamped_gradient",
-                                  "from_value": 1.5,
-                                  "from_y": -64,
-                                  "to_value": -1.5,
-                                  "to_y": 320
-                                },
-                                "argument2": {
-                                  "type": "minecraft:cache_2d",
-                                  "argument": "minecraft:overworld/offset"
-                                }
-                              },
+                              "argument1": "minecraft:overworld/depth",
                               "argument2": {
                                 "type": "minecraft:cache_2d",
                                 "argument": "minecraft:overworld/factor"
@@ -179,7 +166,7 @@
             }
           }
         },
-        "max": 320.0,
+        "max": 80.0,
         "min": -40.0
       }
     },
@@ -216,8 +203,8 @@
                         "type": "minecraft:mul",
                         "argument1": {
           "type": "minecraft:y_clamped_gradient",
-          "from_y": 16,
-          "to_y": 68,
+          "from_y": 48,
+          "to_y": 76,
           "from_value": 1.0,
           "to_value": 0.0
                         },
@@ -438,12 +425,52 @@
             {
               "type": "minecraft:condition",
               "if_true": {
-                "type": "minecraft:biome",
-                "biome_is": [
-                  "minecraft:warm_ocean",
-                  "minecraft:lukewarm_ocean",
-                  "minecraft:deep_lukewarm_ocean"
+                "type": "minecraft:noise_threshold",
+                "noise": "minecraft:temperature",
+                "min_threshold": 0.45,
+                "max_threshold": 2.0
+              },
+              "then_run": {
+                "type": "minecraft:sequence",
+                "sequence": [
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "minecraft:noise_threshold",
+                      "noise": "minecraft:vegetation",
+                      "min_threshold": -2.0,
+                      "max_threshold": -0.15
+                    },
+                    "then_run": {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "minecraft:sand"
+                      }
+                    }
+                  },
+                  {
+                    "type": "minecraft:condition",
+                    "if_true": {
+                      "type": "minecraft:noise_threshold",
+                      "noise": "minecraft:vegetation",
+                      "min_threshold": 0.2,
+                      "max_threshold": 2.0
+                    },
+                    "then_run": {
+                      "type": "minecraft:block",
+                      "result_state": {
+                        "Name": "minecraft:dirt"
+                      }
+                    }
+                  }
                 ]
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "if_true": {
+                "type": "minecraft:biome",
+                "biome_is": "#project-waterworld:seabed_sand"
               },
               "then_run": {
                 "type": "minecraft:block",
@@ -451,34 +478,12 @@
                   "Name": "minecraft:sand"
                 }
               }
-            }
-          ]
-        }
-      },
-      {
-        "type": "minecraft:condition",
-        "if_true": {
-          "type": "minecraft:stone_depth",
-          "offset": 0,
-          "surface_type": "floor",
-          "add_surface_depth": false,
-          "secondary_depth_range": 0
-        },
-        "then_run": {
-          "type": "minecraft:sequence",
-          "sequence": [
+            },
             {
               "type": "minecraft:condition",
               "if_true": {
                 "type": "minecraft:biome",
-                "biome_is": [
-                  "minecraft:ocean",
-                  "minecraft:deep_ocean",
-                  "minecraft:cold_ocean",
-                  "minecraft:deep_cold_ocean",
-                  "minecraft:frozen_ocean",
-                  "minecraft:deep_frozen_ocean"
-                ]
+                "biome_is": "#project-waterworld:seabed_gravel"
               },
               "then_run": {
                 "type": "minecraft:block",
@@ -500,10 +505,39 @@
           "secondary_depth_range": 0
         },
         "then_run": {
-          "type": "minecraft:block",
-          "result_state": {
-            "Name": "minecraft:stone"
-          }
+          "type": "minecraft:sequence",
+          "sequence": [
+            {
+              "type": "minecraft:condition",
+              "if_true": {
+                "type": "minecraft:noise_threshold",
+                "noise": "minecraft:temperature",
+                "min_threshold": 0.45,
+                "max_threshold": 2.0
+              },
+              "then_run": {
+                "type": "minecraft:condition",
+                "if_true": {
+                  "type": "minecraft:noise_threshold",
+                  "noise": "minecraft:vegetation",
+                  "min_threshold": -2.0,
+                  "max_threshold": -0.15
+                },
+                "then_run": {
+                  "type": "minecraft:block",
+                  "result_state": {
+                    "Name": "minecraft:sandstone"
+                  }
+                }
+              }
+            },
+            {
+              "type": "minecraft:block",
+              "result_state": {
+                "Name": "minecraft:stone"
+              }
+            }
+          ]
         }
       },
       {

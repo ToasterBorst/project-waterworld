@@ -6,7 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -14,20 +14,20 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.phys.AABB;
 import waterworld.ProjectWaterworld;
+import waterworld.WaterworldConstants;
 import waterworld.WaterworldDetection;
 
 import java.util.List;
 
 /**
- * Lightweight periodic spawner ensuring a witch inhabits each nearby
- * swamp hut boat. Follows the vanilla CatSpawner pattern:
- * one random player, one probe per tick interval. Bypasses the global
- * monster mob cap which is saturated by drowned in waterworld.
+ * Periodic spawner keeping pillagers on nearby outpost ships. Follows the
+ * witch hut boat / vanilla CatSpawner pattern and bypasses the drowned-saturated
+ * monster mob cap.
  */
-public class WitchHutBoatSpawner {
+public class PillagerOutpostShipSpawner {
 
 	private static final int TICK_INTERVAL = 200;
-	private static final int MAX_WITCHES_PER_STRUCTURE = 1;
+	private static final int MAX_PILLAGERS_PER_STRUCTURE = 5;
 
 	private int nextTick;
 
@@ -41,15 +41,15 @@ public class WitchHutBoatSpawner {
 		Player player = level.getRandomPlayer();
 		if (player == null) return;
 
-		Structure witchHutBoat = level.registryAccess()
+		Structure structure = level.registryAccess()
 				.lookupOrThrow(Registries.STRUCTURE)
-				.getValue(WaterworldStructures.SWAMP_HUT_KEY);
-		if (witchHutBoat == null) return;
+				.getValue(WaterworldStructures.PILLAGER_OUTPOST_KEY);
+		if (structure == null) return;
 
 		BlockPos playerPos = player.blockPosition();
 
 		StructureStart start = level.structureManager()
-				.getStructureWithPieceAt(playerPos, witchHutBoat);
+				.getStructureWithPieceAt(playerPos, structure);
 
 		if (!start.isValid()) {
 			RandomSource random = level.getRandom();
@@ -60,47 +60,49 @@ public class WitchHutBoatSpawner {
 			if (!level.hasChunksAt(probe.getX() - 2, probe.getZ() - 2, probe.getX() + 2, probe.getZ() + 2))
 				return;
 
-			start = level.structureManager().getStructureWithPieceAt(probe, witchHutBoat);
+			start = level.structureManager().getStructureWithPieceAt(probe, structure);
 		}
 
 		if (!start.isValid()) return;
-		trySpawnWitch(level, start);
+		trySpawnPillager(level, start);
 	}
 
-	private void trySpawnWitch(ServerLevel level, StructureStart start) {
+	private void trySpawnPillager(ServerLevel level, StructureStart start) {
 		BoundingBox structureBB = start.getBoundingBox();
 		AABB searchArea = new AABB(
 				structureBB.minX(), structureBB.minY(), structureBB.minZ(),
 				structureBB.maxX() + 1, structureBB.maxY() + 1, structureBB.maxZ() + 1);
 
-		List<Witch> existing = level.getEntitiesOfClass(Witch.class, searchArea);
-		if (existing.size() >= MAX_WITCHES_PER_STRUCTURE) return;
+		List<Pillager> existing = level.getEntitiesOfClass(Pillager.class, searchArea);
+		if (existing.size() >= MAX_PILLAGERS_PER_STRUCTURE) return;
 
 		RandomSource random = level.getRandom();
 		BlockPos spawnPos = findValidSpawnPos(level, start, random);
 		if (spawnPos == null) return;
 
-		Witch witch = EntityTypes.WITCH.create(level, EntitySpawnReason.NATURAL);
-		if (witch != null) {
-			witch.setPersistenceRequired();
-			witch.finalizeSpawn(level, level.getCurrentDifficultyAt(spawnPos),
+		Pillager pillager = EntityTypes.PILLAGER.create(level, EntitySpawnReason.NATURAL);
+		if (pillager != null) {
+			pillager.setPersistenceRequired();
+			pillager.finalizeSpawn(level, level.getCurrentDifficultyAt(spawnPos),
 					EntitySpawnReason.NATURAL, null);
-			witch.snapTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
+			pillager.snapTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
 					random.nextFloat() * 360.0F, 0.0F);
-			level.addFreshEntityWithPassengers(witch);
-			ProjectWaterworld.LOGGER.debug("WitchHutBoatSpawner: spawned witch at {}", spawnPos);
+			level.addFreshEntityWithPassengers(pillager);
+			ProjectWaterworld.LOGGER.debug("PillagerOutpostShipSpawner: spawned pillager at {}",
+					spawnPos);
 		}
 	}
 
 	private BlockPos findValidSpawnPos(ServerLevel level, StructureStart start, RandomSource random) {
 		for (StructurePiece piece : start.getPieces()) {
 			BoundingBox bb = piece.getBoundingBox();
+			int minDeckY = Math.max(bb.minY(), WaterworldConstants.SEA_LEVEL);
 
 			for (int attempt = 0; attempt < 5; attempt++) {
 				int x = bb.minX() + random.nextInt(Math.max(1, bb.getXSpan()));
 				int z = bb.minZ() + random.nextInt(Math.max(1, bb.getZSpan()));
 
-				for (int y = bb.maxY(); y >= bb.minY(); y--) {
+				for (int y = bb.maxY(); y >= minDeckY; y--) {
 					BlockPos pos = new BlockPos(x, y, z);
 
 					if (level.getBlockState(pos.below()).isSolidRender()

@@ -2,16 +2,18 @@
 	"schemaVersion": 1,
 	"id": "project-waterworld",
 	"version": "${version}",
-	"name": "Project Waterworld",
-	"description": "A flooded overworld with flat water at Y=112, natural seabed below, and vanilla biome distribution in the air column for building.",
+	"name": "Waterworld",
+	"description": "Inspired by Skyblock, except you're Kevin Costner. Waterworld. Get it? The world is water. Flooded. Higher sea level, natural seabed, vanilla (mods supported) biome distribution in the air column for all your building and farming needs. Lots of little tweaks for difficulty and fun, like wandering traders and illager patrols on boats!",
 	"authors": [
-		"Project Waterworld"
+		"ToasterBorst, .placeholder {!}"
+	],
+	"contributors": [
 	],
 	"icon": "assets/project-waterworld/icon.png",
 	"contact": {
-		"homepage": "https://github.com/MagicInternetBeans/project-waterworld",
-		"sources": "https://github.com/MagicInternetBeans/project-waterworld",
-		"issues": "https://github.com/MagicInternetBeans/project-waterworld/issues"
+		"homepage": "https://github.com/ToasterBorst/project-waterworld",
+		"sources": "https://github.com/ToasterBorst/project-waterworld",
+		"issues": "https://github.com/ToasterBorst/project-waterworld/issues"
 	},
 	"license": "CC0-1.0",
 	"environment": "*",
