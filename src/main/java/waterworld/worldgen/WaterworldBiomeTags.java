@@ -7,13 +7,11 @@ import net.minecraft.world.level.biome.Biome;
 import waterworld.ProjectWaterworld;
 
 /**
- * Datapack biome tags used by Waterworld edge features (spawns, seabed, islands).
+ * Datapack biome tags used by Waterworld edge features (spawns, islands).
  * Add modded ocean biomes to these tags to opt into the matching behavior.
  */
 public final class WaterworldBiomeTags {
 	public static final TagKey<Biome> TURTLE_SPAWNS = tag("turtle_spawns");
-	public static final TagKey<Biome> SEABED_SAND = tag("seabed_sand");
-	public static final TagKey<Biome> SEABED_GRAVEL = tag("seabed_gravel");
 	public static final TagKey<Biome> SPAWN_ISLAND_COLD = tag("spawn_island_cold");
 	public static final TagKey<Biome> SPAWN_ISLAND_WARM = tag("spawn_island_warm");
 

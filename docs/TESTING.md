@@ -63,7 +63,7 @@ Suggested seeds:
 |-------|-----|
 | Sea surface at Y=112 | Fly at Y=112; F3: water; no stone through surface |
 | Air above surface | Y=113–160: air only |
-| Seabed depth | Vanilla deep oceans preserved; land columns soft-faded into seabed hills ~**Y48–76** |
+| Seabed depth | Vanilla deep oceans preserved; land columns soft-faded into seabed hills ~**Y23–83** (sand/gravel ocean floors, no land-material painter) |
 | Biomes above water | F3 in air (Y>112): vanilla overworld biomes; beaches, stony shores, rivers, mushroom fields where seed places them |
 | Biomes at surface fuzz | F3 at Y=108–111: surface-layer biomes (matches sky column, not underwater ocean) |
 | Biomes at/below surface | F3 at Y&lt;108: oceans (and caves only below Y=0); land/cave columns in the water band → non-deep ocean |
@@ -106,7 +106,7 @@ Structure biome gates sample vanilla overworld climate at Y≈63. Compare a seed
 /locate structure minecraft:pillager_outpost
 ```
 
-Shipwrecks are the ocean (submerged) variant only — beached wrecks and land ruined portals are omitted because they would float on the Y=112 water plane. Ocean ruined portals stay on the seabed. Buried treasure uses vanilla beach biomes (chests still on the ocean floor under those columns).
+Shipwrecks are the ocean (submerged) variant only — beached wrecks omitted. Ruined portals always use the ocean-floor setup; seed-map land portal biomes still qualify so surface portal sites become submerged portals on the seabed. Buried treasure uses vanilla beach biomes (chests still on the ocean floor under those columns).
 
 Seabed under flooded land should be ocean sand/gravel/stone — **not** dripstone-cave spikes (cave biomes only below Y=0).
 

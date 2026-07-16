@@ -8,7 +8,7 @@ Server-side only for joining multiplayer — clients do not need the mod install
 
 ## Features
 
-- **Waterworld terrain** — Endless ocean at sea level Y=112, vanilla biomes above water (beaches, stony shores, rivers, and mushroom fields appear where the seed places them)
+- **Waterworld terrain** — Endless ocean at sea level Y=112, soft-faded vanilla seabed below (~Y23–83), sand/gravel ocean floors, vanilla biomes above water (beaches, stony shores, rivers, and mushroom fields where the seed places them)
 - **Bamboo as sticks** — Bamboo can substitute for sticks in any crafting recipe
 - **Wild guardian spawns** — Guardians spawn naturally in ocean biomes at low frequency
 - **Drowned guardian riders** — Wild guardians can spawn with mounted drowned (trident chance)

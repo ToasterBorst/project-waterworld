@@ -30,7 +30,7 @@ flowchart TB
 |-----------|------|
 | **Datapack** (`data/project-waterworld/`) | World preset, noise settings (sea level, density caps, surface rules), UI tag for normal presets |
 | **Datapack overrides** (`data/minecraft/`) | Buried-treasure ocean gate; structure sets (emptied villages/mansions/…; restored pyramids/temples/trail ruins; hut/outpost substitutes); trail ruins height offset |
-| **Mod Java** | `WaterworldBiomeSource`, structure types/pieces, seabed settle + flood mixins, spawn/boat mixins, optional Mod Menu |
+| **Mod Java** | `WaterworldBiomeSource`, structure types/pieces, seabed settle/flood + monument terrain mixins, spawn/boat mixins, optional Mod Menu |
 | **Mod Java (client, optional)** | `WaterworldModMenu` + `WaterworldConfigScreen` — in-game config when Mod Menu is installed (`compileOnly` dependency; no runtime requirement) |
 | **Vanilla** | Chunk noise, aquifers, ore, carving (tuned via JSON) |
 
@@ -73,8 +73,6 @@ Air-column / underwater remapping already follows `minecraft:is_ocean` / `c:is_*
 | Tag | Effect |
 |-----|--------|
 | `turtle_spawns` | Ocean turtle natural spawns + underwater sand spawn rules |
-| `seabed_sand` | Sand seabed surface rule |
-| `seabed_gravel` | Gravel seabed surface rule |
 | `spawn_island_cold` | Cold/frozen spawn-island materials |
 | `spawn_island_warm` | Warm spawn-island coral decoration |
 
@@ -83,9 +81,10 @@ Air-column / underwater remapping already follows `minecraft:is_ocean` / `c:is_*
 [`noise_settings/waterworld.json`](../src/main/resources/data/project-waterworld/worldgen/noise_settings/waterworld.json):
 
 - `sea_level`: **112**
-- Vanilla `overworld/depth` + `overworld/sloped_cheese` (preserves deep oceans)
-- Soft density fade **Y48→76** trims land tops into seabed hills under the water plane
-- `preliminary_surface` upper clamp ~80; climate surface accents (sand/sandstone/dirt) plus ocean sand/gravel tags
+- Vanilla `overworld/depth` + `overworld/sloped_cheese` at absolute Y (preserves deep oceans and natural slopes)
+- Soft density fade **Y23→83** trims land tops into seabed hills under the water plane
+- Preliminary surface upper bound max **320**
+- Surface rules: warm/lukewarm oceans → sand; cold/frozen/normal oceans → gravel; else stone (no land-material borrowing)
 
 ## Versioning
 

@@ -2,10 +2,19 @@
 
 ## Unreleased
 
+### Terrain — recovery
+- Soft-fade absolute-Y density restored (no height compression); fade band **Y23→83**
+- Simple ocean floor palette (warm → sand, cold/normal → gravel); removed climate dirt/sandstone accents and seabed material painter
+- Restored ocean monument terrain-clear protection mixin
+
 ### Structures — seed-map fidelity
 - Structure biome gates (`isValidBiome` + monument `getBiomesWithin`) sample vanilla overworld climate at Y≈63 so XZ matches seed maps
-- Ocean-only ruined portals and shipwrecks (land/beached variants omitted — they float on the water plane)
+- Ruined portals: ocean-floor variant only, but biome gate includes all overworld portal biomes so seed-map land sites become submerged portals
+- Shipwrecks: ocean variant only (beached omitted); spacing nudged to 22
+
 - Buried treasure uses vanilla beach biomes (chests on ocean floor under beach columns)
+- Pyramids/temples/trail ruins on seabed; hut boat + outpost ship substitutes; villages/igloos/mansions disabled
+- Monument / portal / wreck spacing kept near vanilla (not the denser pre-freeze numbers)
 - Monument guardians ignore wild guardian day delay / chance
 - Mid-depth cave biomes no longer paint the seabed (dripstone/lush); caves kept only below Y=0
 

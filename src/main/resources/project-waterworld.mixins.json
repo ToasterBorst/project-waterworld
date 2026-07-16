@@ -18,7 +18,8 @@
     "BoatControlMixin",
     "ScatteredFeatureSeabedMixin",
     "FloodedScatteredStructureMixin",
-    "StructureSeedMapBiomeMixin"
+    "StructureSeedMapBiomeMixin",
+    "OceanMonumentTerrainMixin"
   ],
   "client": [],
   "server": [],
