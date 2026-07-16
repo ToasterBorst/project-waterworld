@@ -9,7 +9,6 @@ Server-side only for joining multiplayer — clients do not need the mod install
 ## Features
 
 - **Waterworld terrain** — Endless ocean at sea level Y=112, soft-faded vanilla seabed below (~Y23–83), sand/gravel ocean floors, vanilla biomes above water (beaches, stony shores, rivers, and mushroom fields where the seed places them)
-- **Bamboo as sticks** — Bamboo can substitute for sticks in any crafting recipe
 - **Wild guardian spawns** — Guardians spawn naturally in ocean biomes at low frequency
 - **Drowned guardian riders** — Wild guardians can spawn with mounted drowned (trident chance)
 - **Drowned on land** — Drowned roam onto land instead of retreating to water
@@ -48,7 +47,7 @@ Optional: install [Mod Menu](https://modrinth.com/mod/modmenu) on the client for
 
 ## Configuration
 
-On first launch, a config file is generated at `config/waterworld.properties` with commented defaults grouped by feature (activation, spawn, guardians, turtles, illagers, traders, boats, crafting). Edit it to toggle features or tune spawn rates. With Mod Menu installed client-side, the same options are available from the mod list (activation mode is a cycle toggle: Auto / Always / Never).
+On first launch, a config file is generated at `config/waterworld.properties` with commented defaults grouped by feature (activation, spawn, guardians, turtles, illagers, traders, boats). Edit it to toggle features or tune spawn rates. With Mod Menu installed client-side, the same options are available from the mod list (activation mode is a cycle toggle: Auto / Always / Never).
 
 Legacy `config/project-waterworld.properties` and `config/project-waterworld.json` are migrated automatically on load.
 

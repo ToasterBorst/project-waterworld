@@ -106,7 +106,7 @@ Structure biome gates sample vanilla overworld climate at Y≈63. Compare a seed
 /locate structure minecraft:pillager_outpost
 ```
 
-Shipwrecks are the ocean (submerged) variant only — beached wrecks omitted. Ruined portals always use the ocean-floor setup; seed-map land portal biomes still qualify so surface portal sites become submerged portals on the seabed. Buried treasure uses vanilla beach biomes (chests still on the ocean floor under those columns).
+Shipwrecks are the ocean (submerged) variant only — beached wrecks omitted. Vanilla-density wrecks appear in seed-map ocean zones; a bonus lower-density set (`project-waterworld:waterworld_shipwreck`) scatters additional wrecks across all overworld biomes. Ruined portals always use the ocean-floor setup; seed-map land portal biomes still qualify so surface portal sites become submerged portals on the seabed. Buried treasure uses vanilla beach biomes (chests still on the ocean floor under those columns).
 
 Seabed under flooded land should be ocean sand/gravel/stone — **not** dripstone-cave spikes (cave biomes only below Y=0).
 
@@ -201,29 +201,6 @@ Trigger a raid near the ocean and observe. Raiders should spawn in boats over wa
 ```
 
 Then approach a populated area (or place a villager near water).
-
-### Bamboo as sticks in crafting
-
-Bamboo can substitute for sticks in any crafting recipe. To test:
-
-1. Obtain bamboo (Creative inventory or `/give @p minecraft:bamboo 64`)
-2. Open a crafting table and try crafting a wooden pickaxe using bamboo instead of sticks:
-   - Place planks across the top row, bamboo in the center and bottom-center slots
-3. The recipe should work identically to using sticks
-
-Verify with several recipe types:
-
-```
-/give @p minecraft:bamboo 64
-```
-
-- Tools: pickaxe, axe, sword, shovel, hoe (bamboo in stick slots)
-- Torch: bamboo below coal
-- Ladder: bamboo in stick slots
-- Bow/crossbow: bamboo in stick slots
-- Fishing rod: bamboo in stick slots
-
-Disable via config: set `bamboo_replaces_sticks` to `false` in `config/waterworld.properties`.
 
 ### Bamboo rafts for mobs
 

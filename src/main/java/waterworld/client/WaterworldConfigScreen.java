@@ -152,11 +152,6 @@ public class WaterworldConfigScreen extends Screen {
 				"Illagers and wandering traders can steer boats.",
 				v -> config.mobsCanPilotBoats = v);
 
-		addSectionKey("config.project-waterworld.section.crafting");
-		addBoolOption("Bamboo Replaces Sticks", config.bambooReplacesSticks,
-				"Bamboo can substitute for sticks in any crafting recipe.",
-				v -> config.bambooReplacesSticks = v);
-
 		this.addWidget(optionList);
 
 		int buttonY = this.height - FOOTER_HEIGHT + 8;

@@ -10,7 +10,6 @@
   "config.project-waterworld.section.illagers": "Illagers & Patrols",
   "config.project-waterworld.section.traders": "Wandering Traders",
   "config.project-waterworld.section.boats": "Boat Behavior",
-  "config.project-waterworld.section.crafting": "Crafting",
   "config.project-waterworld.option.activation_mode": "Activation Mode",
   "config.project-waterworld.activation.auto": "Auto",
   "config.project-waterworld.activation.always": "Always",

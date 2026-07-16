@@ -10,7 +10,7 @@
 ### Structures — seed-map fidelity
 - Structure biome gates (`isValidBiome` + monument `getBiomesWithin`) sample vanilla overworld climate at Y≈63 so XZ matches seed maps
 - Ruined portals: ocean-floor variant only, but biome gate includes all overworld portal biomes so seed-map land sites become submerged portals
-- Shipwrecks: ocean variant only (beached omitted); spacing nudged to 22
+- Shipwrecks: ocean variant only (beached omitted); vanilla density preserved; bonus lower-density wrecks across all overworld biomes
 
 - Buried treasure uses vanilla beach biomes (chests on ocean floor under beach columns)
 - Pyramids/temples/trail ruins on seabed; hut boat + outpost ship substitutes; villages/igloos/mansions disabled
@@ -25,9 +25,6 @@
 - Natural seabed terrain below water level
 - Vanilla biome distribution in the air column above water
 - Land structures (villages, outposts, igloos, etc.) disabled
-
-### Crafting
-- Bamboo can substitute for sticks in any crafting recipe
 
 ### Mob Spawning
 - Wild guardians spawn naturally in ocean biomes

@@ -18,7 +18,6 @@ public final class WaterworldConfig {
 	public static WaterworldConfig INSTANCE = new WaterworldConfig();
 
 	public String activationMode = "auto";
-	public boolean bambooReplacesSticks = true;
 	public boolean wildGuardianSpawns = true;
 	public boolean drownedRideGuardians = true;
 	public boolean drownedCanGoOnLand = true;
@@ -130,7 +129,6 @@ public final class WaterworldConfig {
 
 			WaterworldConfig config = new WaterworldConfig();
 			config.activationMode = normalizeActivationMode(legacy.activation_mode);
-			config.bambooReplacesSticks = legacy.bamboo_replaces_sticks;
 			config.wildGuardianSpawns = legacy.wild_guardian_spawns;
 			config.drownedRideGuardians = legacy.drowned_ride_guardians;
 			config.drownedCanGoOnLand = legacy.drowned_can_go_on_land;
@@ -160,7 +158,6 @@ public final class WaterworldConfig {
 
 	private void readProperties(Properties props) {
 		activationMode = normalizeActivationMode(getString(props, "activation_mode", activationMode));
-		bambooReplacesSticks = getBool(props, "bamboo_replaces_sticks", bambooReplacesSticks);
 		wildGuardianSpawns = getBool(props, "wild_guardian_spawns", wildGuardianSpawns);
 		drownedRideGuardians = getBool(props, "drowned_ride_guardians", drownedRideGuardians);
 		drownedCanGoOnLand = getBool(props, "drowned_can_go_on_land", drownedCanGoOnLand);
@@ -205,8 +202,8 @@ public final class WaterworldConfig {
 					#
 					# Live file: config/waterworld.properties
 					# Changes take effect on next world load unless otherwise noted.
-					# Land structures (villages, outposts, igloos, pyramids, temples, huts,
-					# mansions, trail ruins) are disabled by the built-in datapack.
+					# Land structures (villages, igloos, mansions) are disabled by the
+					# built-in datapack.
 
 					# --- Activation ---
 
@@ -312,11 +309,6 @@ public final class WaterworldConfig {
 
 					# Illagers and wandering traders can steer boats
 					mobs_can_pilot_boats=%s
-
-					# --- Crafting ---
-
-					# Bamboo can substitute for sticks in any crafting recipe
-					bamboo_replaces_sticks=%s
 					""".formatted(
 					activationMode,
 					spawnOceanBiome,
@@ -346,8 +338,7 @@ public final class WaterworldConfig {
 					wanderingTraderMinDays,
 					wanderingTraderFullStrengthDays,
 					mobsCanExitBoats,
-					mobsCanPilotBoats,
-					bambooReplacesSticks);
+					mobsCanPilotBoats);
 
 			Files.writeString(file, content);
 		} catch (IOException e) {
@@ -406,7 +397,6 @@ public final class WaterworldConfig {
 	@SuppressWarnings("unused")
 	private static class LegacyJsonConfig {
 		String activation_mode = "auto";
-		boolean bamboo_replaces_sticks = true;
 		boolean wild_guardian_spawns = true;
 		boolean drowned_ride_guardians = true;
 		boolean drowned_can_go_on_land = true;
