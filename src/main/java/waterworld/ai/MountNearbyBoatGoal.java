@@ -32,7 +32,8 @@ public class MountNearbyBoatGoal extends Goal {
 
 	@Override
 	public boolean requiresUpdateEveryTick() {
-		return true;
+		// Only need every-tick while actively swimming to a boat.
+		return targetBoat != null && !mob.isPassenger();
 	}
 
 	@Override

@@ -187,7 +187,7 @@ public class WaterworldConfigScreen extends Screen {
 		for (Runnable applier : appliers) {
 			applier.run();
 		}
-		config.activationMode = WaterworldConfig.normalizeActivationMode(config.activationMode);
+		config.sanitize();
 		config.save(configDir);
 		WaterworldConfig.INSTANCE = config;
 		this.minecraft.gui.setScreen(parent);

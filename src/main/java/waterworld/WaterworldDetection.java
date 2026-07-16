@@ -3,6 +3,8 @@ package waterworld;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import waterworld.worldgen.WaterworldBiomeSource;
 
@@ -12,6 +14,10 @@ import waterworld.worldgen.WaterworldBiomeSource;
  *
  * Detection is cached per server lifecycle to avoid repeated generator
  * lookups on every mob tick.
+ *
+ * <p>Worldgen mixins must use {@link #usesWaterworldBiomeSource} — never the
+ * gameplay cache — because chunk generation can run before {@code SERVER_STARTED}
+ * and must not follow {@code activation_mode}.
  */
 public final class WaterworldDetection {
 
@@ -61,23 +67,41 @@ public final class WaterworldDetection {
 	}
 
 	/**
+	 * True when the chunk generator uses our biome source. For worldgen mixins only —
+	 * ignores {@code activation_mode} and the gameplay cache.
+	 */
+	public static boolean usesWaterworldBiomeSource(ChunkGenerator generator) {
+		return generator != null && generator.getBiomeSource() instanceof WaterworldBiomeSource;
+	}
+
+	/**
+	 * Resolves the overworld generator from a worldgen level accessor when possible.
+	 */
+	public static boolean usesWaterworldBiomeSource(LevelAccessor level) {
+		if (level instanceof WorldGenLevel worldGenLevel) {
+			return usesWaterworldBiomeSource(worldGenLevel.getLevel().getChunkSource().getGenerator());
+		}
+		if (level instanceof ServerLevel serverLevel) {
+			return usesWaterworldBiomeSource(serverLevel.getChunkSource().getGenerator());
+		}
+		return false;
+	}
+
+	/**
 	 * Direct generator check for use before SERVER_STARTED (e.g. during world creation).
-	 * Checks the overworld generator directly regardless of cached state or config mode.
+	 * Respects {@code activation_mode} for spawn / gameplay-adjacent early hooks.
 	 */
 	public static boolean isWaterworldLevel(ServerLevel level) {
 		if (level.dimension() != Level.OVERWORLD) return false;
 		String mode = WaterworldConfig.normalizeActivationMode(WaterworldConfig.INSTANCE.activationMode);
 		if ("always".equals(mode)) return true;
 		if ("never".equals(mode)) return false;
-		ChunkGenerator generator = level.getChunkSource().getGenerator();
-		return generator.getBiomeSource() instanceof WaterworldBiomeSource;
+		return usesWaterworldBiomeSource(level.getChunkSource().getGenerator());
 	}
 
 	private static boolean detectWaterworldOverworld(MinecraftServer server) {
 		ServerLevel overworld = server.getLevel(Level.OVERWORLD);
 		if (overworld == null) return false;
-
-		ChunkGenerator generator = overworld.getChunkSource().getGenerator();
-		return generator.getBiomeSource() instanceof WaterworldBiomeSource;
+		return usesWaterworldBiomeSource(overworld.getChunkSource().getGenerator());
 	}
 }

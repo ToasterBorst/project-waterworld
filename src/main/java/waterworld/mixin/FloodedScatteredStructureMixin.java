@@ -29,7 +29,7 @@ public abstract class FloodedScatteredStructureMixin {
 	private void waterworld$floodInteriors(WorldGenLevel level, StructureManager structureManager,
 			ChunkGenerator generator, net.minecraft.util.RandomSource random, BoundingBox chunkBox,
 			ChunkPos chunkPos, PiecesContainer pieces, CallbackInfo ci) {
-		if (!WaterworldDetection.isActive()) return;
+		if (!WaterworldDetection.usesWaterworldBiomeSource(generator)) return;
 
 		Structure self = (Structure) (Object) this;
 		if (!(self instanceof DesertPyramidStructure) && !(self instanceof JungleTempleStructure)) {

@@ -33,7 +33,7 @@ public abstract class OceanMonumentTerrainMixin {
 	@Inject(method = "generateWaterBox", at = @At("HEAD"), cancellable = true)
 	private void waterworld$skipDestructiveClears(WorldGenLevel level, BoundingBox chunkBB,
 			int x1, int y1, int z1, int x2, int y2, int z2, CallbackInfo ci) {
-		if (!WaterworldDetection.isActive()) return;
+		if (!WaterworldDetection.usesWaterworldBiomeSource(level)) return;
 
 		int xSpan = x2 - x1;
 		int zSpan = z2 - z1;

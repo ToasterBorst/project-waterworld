@@ -2,13 +2,15 @@ package waterworld.spawn;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
+import org.jetbrains.annotations.Nullable;
+import waterworld.WaterworldConfig;
 import waterworld.ai.BoatApproachPlayerGoal;
 import waterworld.ai.BoatCombatPilotGoal;
 import waterworld.ai.BoatFleeGoal;
@@ -16,10 +18,6 @@ import waterworld.ai.DismountBoatGoal;
 import waterworld.ai.MountNearbyBoatGoal;
 import waterworld.ai.PilotBoatGoal;
 import waterworld.ai.SwimToLandGoal;
-import waterworld.WaterworldConfig;
-
-import net.minecraft.world.entity.EntitySpawnReason;
-import org.jetbrains.annotations.Nullable;
 
 public final class BoatSpawnHelper {
 	private BoatSpawnHelper() {
@@ -63,24 +61,6 @@ public final class BoatSpawnHelper {
 		boat.setYRot(level.getRandom().nextFloat() * 360.0f);
 		level.addFreshEntity(boat);
 		return boat;
-	}
-
-	/**
-	 * Creates a boat, mounts the mob as pilot (seat 0), and injects boat AI goals.
-	 */
-	public static void mountAsPilot(ServerLevel level, Mob mob) {
-		AbstractBoat boat = spawnBoatAt(level, mob.getX(), mob.getY(), mob.getZ());
-		if (boat == null) return;
-		mob.startRiding(boat);
-		addBoatAI(mob, true);
-	}
-
-	/**
-	 * Mounts the mob as a passenger (seat 1) in an existing boat.
-	 */
-	public static void mountAsPassenger(Mob mob, AbstractBoat boat) {
-		mob.startRiding(boat);
-		addBoatAI(mob, false);
 	}
 
 	/**

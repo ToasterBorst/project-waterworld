@@ -50,7 +50,7 @@ public class BoatCombatPilotGoal extends Goal {
 
 	@Override
 	public boolean requiresUpdateEveryTick() {
-		return true;
+		return mob.getVehicle() instanceof AbstractBoat;
 	}
 
 	@Override
@@ -112,7 +112,7 @@ public class BoatCombatPilotGoal extends Goal {
 	private void steerToward(AbstractBoat boat, double tx, double tz, double stopDist, boolean allowForward) {
 		double dx = tx - boat.getX();
 		double dz = tz - boat.getZ();
-		double dist = Math.sqrt(dx * dx + dz * dz);
+		double distSq = dx * dx + dz * dz;
 
 		float desiredYaw = (float) (Mth.atan2(dz, dx) * (180.0 / Math.PI)) - 90.0f;
 		float yawDiff = Mth.degreesDifference(boat.getYRot(), desiredYaw);
@@ -120,7 +120,7 @@ public class BoatCombatPilotGoal extends Goal {
 		boat.setInput(
 				yawDiff < -5,
 				yawDiff > 5,
-				allowForward && dist > stopDist,
+				allowForward && distSq > stopDist * stopDist,
 				false
 		);
 	}

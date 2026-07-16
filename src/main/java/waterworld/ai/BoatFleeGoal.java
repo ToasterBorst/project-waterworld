@@ -34,7 +34,7 @@ public class BoatFleeGoal extends Goal {
 
 	@Override
 	public boolean requiresUpdateEveryTick() {
-		return true;
+		return mob.getVehicle() instanceof AbstractBoat;
 	}
 
 	@Override

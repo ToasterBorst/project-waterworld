@@ -5,10 +5,8 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
-import net.minecraft.world.phys.AABB;
 
 import java.util.EnumSet;
-import java.util.List;
 
 /**
  * Steers a boat toward the nearest non-spectator player and holds
@@ -33,7 +31,7 @@ public class BoatApproachPlayerGoal extends Goal {
 
 	@Override
 	public boolean requiresUpdateEveryTick() {
-		return true;
+		return mob.getVehicle() instanceof AbstractBoat;
 	}
 
 	@Override
@@ -87,7 +85,6 @@ public class BoatApproachPlayerGoal extends Goal {
 
 		double dx = targetPlayer.getX() - boat.getX();
 		double dz = targetPlayer.getZ() - boat.getZ();
-		double dist = Math.sqrt(dx * dx + dz * dz);
 
 		float desiredYaw = (float) (Mth.atan2(dz, dx) * (180.0 / Math.PI)) - 90.0f;
 		float yawDiff = Mth.degreesDifference(boat.getYRot(), desiredYaw);
@@ -95,25 +92,12 @@ public class BoatApproachPlayerGoal extends Goal {
 		boat.setInput(
 				yawDiff < -5,
 				yawDiff > 5,
-				dist > APPROACH_DIST,
+				distSq > APPROACH_DIST * APPROACH_DIST,
 				false
 		);
 	}
 
 	private Player findNearestPlayer() {
-		AABB searchBox = mob.getBoundingBox().inflate(SEARCH_RANGE);
-		List<Player> players = mob.level().getEntitiesOfClass(Player.class, searchBox,
-				p -> p.isAlive() && !p.isSpectator());
-
-		Player nearest = null;
-		double nearestDistSq = Double.MAX_VALUE;
-		for (Player p : players) {
-			double d = p.distanceToSqr(mob);
-			if (d < nearestDistSq) {
-				nearestDistSq = d;
-				nearest = p;
-			}
-		}
-		return nearest;
+		return mob.level().getNearestPlayer(mob, SEARCH_RANGE);
 	}
 }

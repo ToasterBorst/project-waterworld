@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.features.MiscOverworldFeatures;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -11,7 +12,6 @@ import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.LevelData;
@@ -72,13 +72,25 @@ public class SpawnPointMixin {
 		ProjectWaterworld.LOGGER.info("Set world spawn at {} (biome override: {}, island: {})",
 				spawnPos, hasBiomeOverride, wantsIsland);
 
+		if (spawnBonusChest) {
+			ServerChunkCache chunkSource = level.getChunkSource();
+			level.registryAccess()
+					.lookup(Registries.CONFIGURED_FEATURE)
+					.flatMap(registry -> registry.get(MiscOverworldFeatures.BONUS_CHEST))
+					.ifPresent(feature -> feature.value().place(
+							level, chunkSource.getGenerator(), level.getRandom(),
+							levelData.getRespawnData().pos()));
+		}
+
 		levelLoadListener.finish(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN);
 	}
 
 	private static BlockPos findBiomeSpawn(ServerLevel level, String biomeId) {
-		Identifier id = biomeId.contains(":")
-				? Identifier.parse(biomeId)
-				: Identifier.fromNamespaceAndPath("minecraft", biomeId);
+		Identifier id = parseBiomeId(biomeId);
+		if (id == null) {
+			ProjectWaterworld.LOGGER.warn("Invalid spawn_ocean_biome '{}', using default spawn", biomeId);
+			return defaultSpawn(level);
+		}
 
 		ResourceKey<Biome> biomeKey = ResourceKey.create(Registries.BIOME, id);
 
@@ -96,6 +108,21 @@ public class SpawnPointMixin {
 		}
 
 		ProjectWaterworld.LOGGER.warn("Could not find biome '{}' near origin, using default spawn", biomeId);
+		return defaultSpawn(level);
+	}
+
+	private static Identifier parseBiomeId(String biomeId) {
+		try {
+			if (biomeId.contains(":")) {
+				return Identifier.parse(biomeId);
+			}
+			return Identifier.fromNamespaceAndPath("minecraft", biomeId);
+		} catch (RuntimeException e) {
+			return null;
+		}
+	}
+
+	private static BlockPos defaultSpawn(ServerLevel level) {
 		ServerChunkCache chunkSource = level.getChunkSource();
 		ChunkPos fallback = ChunkPos.containing(chunkSource.randomState().sampler().findSpawnPosition());
 		int height = chunkSource.getGenerator().getSpawnHeight(level);

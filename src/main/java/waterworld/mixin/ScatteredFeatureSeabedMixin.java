@@ -28,7 +28,7 @@ public abstract class ScatteredFeatureSeabedMixin {
 			)
 	)
 	private BlockPos waterworld$oceanFloorHeightmapPos(LevelAccessor level, Heightmap.Types type, BlockPos pos) {
-		if (WaterworldDetection.isActive()) {
+		if (WaterworldDetection.usesWaterworldBiomeSource(level)) {
 			return level.getHeightmapPos(Heightmap.Types.OCEAN_FLOOR_WG, pos);
 		}
 		return level.getHeightmapPos(type, pos);

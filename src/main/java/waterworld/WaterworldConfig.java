@@ -57,8 +57,9 @@ public final class WaterworldConfig {
 	public static double dayScaleFactor(long gameTime, int minDays, int fullStrengthDays) {
 		long currentDay = gameTime / 24000L;
 		if (currentDay < minDays) return 0.0;
-		if (currentDay >= fullStrengthDays) return 1.0;
-		return (double) (currentDay - minDays) / (fullStrengthDays - minDays);
+		int span = Math.max(1, fullStrengthDays - minDays);
+		if (currentDay >= minDays + span) return 1.0;
+		return (double) (currentDay - minDays) / span;
 	}
 
 	public static String normalizeActivationMode(String mode) {
@@ -95,7 +96,6 @@ public final class WaterworldConfig {
 		if (Files.exists(file)) {
 			WaterworldConfig config = loadPropertiesFile(file);
 			if (config != null) {
-				config.save(configDir);
 				return config;
 			}
 		}
@@ -149,6 +149,15 @@ public final class WaterworldConfig {
 			config.pillagerArmorChance = legacy.pillager_armor_chance;
 			config.armorScalesWithDifficulty = legacy.armor_scales_with_difficulty;
 			config.tridentDrownedMinDays = legacy.trident_drowned_min_days;
+			config.guardianMinDays = legacy.guardian_min_days;
+			config.guardianFullStrengthDays = legacy.guardian_full_strength_days;
+			config.patrolMinDays = legacy.patrol_min_days;
+			config.patrolFullStrengthDays = legacy.patrol_full_strength_days;
+			config.wanderingTraderMinDays = legacy.wandering_trader_min_days;
+			config.wanderingTraderFullStrengthDays = legacy.wandering_trader_full_strength_days;
+			config.drownedRiderMinDays = legacy.drowned_rider_min_days;
+			config.drownedRiderFullStrengthDays = legacy.drowned_rider_full_strength_days;
+			config.sanitize();
 			return config;
 		} catch (Exception e) {
 			ProjectWaterworld.LOGGER.warn("Failed to migrate legacy JSON config", e);
@@ -189,11 +198,39 @@ public final class WaterworldConfig {
 		wanderingTraderFullStrengthDays = getInt(props, "wandering_trader_full_strength_days", wanderingTraderFullStrengthDays);
 		drownedRiderMinDays = getInt(props, "drowned_rider_min_days", drownedRiderMinDays);
 		drownedRiderFullStrengthDays = getInt(props, "drowned_rider_full_strength_days", drownedRiderFullStrengthDays);
+		sanitize();
+	}
+
+	/** Clamps chances and day ranges so runtime math stays safe. */
+	public void sanitize() {
+		activationMode = normalizeActivationMode(activationMode);
+		if (spawnOceanBiome == null) spawnOceanBiome = "";
+
+		guardianSpawnWeight = Math.max(0, guardianSpawnWeight);
+		turtleSpawnWeight = Math.max(0, turtleSpawnWeight);
+		guardianSpawnChance = clamp01(guardianSpawnChance);
+		drownedRiderChance = clamp01(drownedRiderChance);
+		tridentRiderChance = clamp01(tridentRiderChance);
+		pillagerArmorChance = clamp01(pillagerArmorChance);
+
+		tridentDrownedMinDays = Math.max(0, tridentDrownedMinDays);
+		guardianMinDays = Math.max(0, guardianMinDays);
+		guardianFullStrengthDays = Math.max(guardianMinDays + 1, guardianFullStrengthDays);
+		patrolMinDays = Math.max(0, patrolMinDays);
+		patrolFullStrengthDays = Math.max(patrolMinDays + 1, patrolFullStrengthDays);
+		wanderingTraderMinDays = Math.max(0, wanderingTraderMinDays);
+		wanderingTraderFullStrengthDays = Math.max(wanderingTraderMinDays + 1, wanderingTraderFullStrengthDays);
+		drownedRiderMinDays = Math.max(0, drownedRiderMinDays);
+		drownedRiderFullStrengthDays = Math.max(drownedRiderMinDays + 1, drownedRiderFullStrengthDays);
+	}
+
+	private static double clamp01(double value) {
+		return Math.max(0.0, Math.min(1.0, value));
 	}
 
 	public void save(Path configDir) {
 		Path file = configDir.resolve(FILE_NAME);
-		activationMode = normalizeActivationMode(activationMode);
+		sanitize();
 		try {
 			Files.createDirectories(configDir);
 
@@ -201,16 +238,17 @@ public final class WaterworldConfig {
 					# Waterworld Configuration
 					#
 					# Live file: config/waterworld.properties
-					# Changes take effect on next world load unless otherwise noted.
+					# Most toggles apply on next world load. Spawn weights for guardians
+					# and turtles require a full game restart (BiomeModifications).
 					# Land structures (villages, igloos, mansions) are disabled by the
-					# built-in datapack.
+					# mod datapack for every overworld while this mod is installed.
 
 					# --- Activation ---
 
 					# Controls when mod gameplay effects (spawns, boat AI, etc.) are active.
 					# auto   = only active in Waterworld world type (recommended)
 					# always = active in all world types
-					# never  = disabled (worldgen-only, no gameplay changes)
+					# never  = disabled (no gameplay changes; datapack structure overrides still apply)
 					activation_mode=%s
 
 					# --- Player Spawn ---
@@ -228,9 +266,10 @@ public final class WaterworldConfig {
 					# --- Guardians & Drowned ---
 
 					# Wild guardian spawns in ocean biomes (outside monuments)
+					# Restart required after changing weight
 					wild_guardian_spawns=%s
 
-					# Spawn weight for wild guardians (squid is ~5, keep very low)
+					# Spawn weight for wild guardians (squid is ~5, keep very low; restart required)
 					guardian_spawn_weight=%d
 
 					# Chance a guardian spawn attempt succeeds (0.0-1.0, lower = rarer)
@@ -266,9 +305,10 @@ public final class WaterworldConfig {
 					# --- Turtles ---
 
 					# Turtles spawn naturally in biomes tagged #project-waterworld:turtle_spawns
+					# Restart required after changing weight
 					turtle_ocean_spawns=%s
 
-					# Spawn weight for ocean turtles
+					# Spawn weight for ocean turtles (restart required)
 					turtle_spawn_weight=%d
 
 					# --- Illagers & Patrols ---
@@ -411,11 +451,19 @@ public final class WaterworldConfig {
 		boolean spawn_gear = true;
 		int guardian_spawn_weight = 1;
 		int turtle_spawn_weight = 5;
-		double guardian_spawn_chance = 0.05;
-		double drowned_rider_chance = 0.15;
-		double trident_rider_chance = 0.25;
+		double guardian_spawn_chance = 0.04;
+		double drowned_rider_chance = 0.12;
+		double trident_rider_chance = 0.20;
 		double pillager_armor_chance = 0.3;
 		boolean armor_scales_with_difficulty = true;
 		int trident_drowned_min_days = 10;
+		int guardian_min_days = 3;
+		int guardian_full_strength_days = 20;
+		int patrol_min_days = 5;
+		int patrol_full_strength_days = 24;
+		int wandering_trader_min_days = 2;
+		int wandering_trader_full_strength_days = 12;
+		int drowned_rider_min_days = 5;
+		int drowned_rider_full_strength_days = 18;
 	}
 }

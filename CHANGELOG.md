@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Beta readiness
+- Worldgen mixins (seabed settle, pyramid/temple flood, monument terrain) gate on `WaterworldBiomeSource`, not gameplay `isActive()`
+- Removed no-op builtin resource-pack registration (datapack remains mod-root `data/`)
+- Spawn override path places vanilla bonus chest when enabled; invalid `spawn_ocean_biome` no longer crashes
+- Config: sanitize day ranges/chances; do not rewrite properties on every load; complete legacy JSON day-field migration
+- Boat AI: every-tick only while aboard / mounting; use `getNearestPlayer` and squared-distance checks
+- `docs/` is local-only (gitignored); author metadata cleaned
+
 ### Terrain — recovery
 - Soft-fade absolute-Y density restored (no height compression); fade band **Y23→83**
 - Simple ocean floor palette (warm → sand, cold/normal → gravel); removed climate dirt/sandstone accents and seabed material painter
@@ -24,7 +32,7 @@
 - Flooded overworld with flat ocean surface at Y=112
 - Natural seabed terrain below water level
 - Vanilla biome distribution in the air column above water
-- Land structures (villages, outposts, igloos, etc.) disabled
+- Villages, igloos, and mansions disabled; outposts / swamp huts use boat-ship substitutes
 
 ### Mob Spawning
 - Wild guardians spawn naturally in ocean biomes

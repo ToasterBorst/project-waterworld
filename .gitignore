@@ -42,3 +42,6 @@ replay_*.log
 # decompiled sources
 
 net/
+
+# Local agent / author docs (not published to GitHub)
+docs/

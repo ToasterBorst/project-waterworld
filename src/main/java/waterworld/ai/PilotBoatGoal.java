@@ -10,11 +10,9 @@ import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
-import java.util.List;
 
 /**
  * Steers a boat toward meaningful destinations. Tries targets in
@@ -40,7 +38,8 @@ public class PilotBoatGoal extends Goal {
 
 	@Override
 	public boolean requiresUpdateEveryTick() {
-		return true;
+		// Boat input must refresh every tick while piloting; idle when not aboard.
+		return mob.getVehicle() instanceof AbstractBoat;
 	}
 
 	@Override
@@ -77,9 +76,9 @@ public class PilotBoatGoal extends Goal {
 
 		double dx = targetPos.x - boat.getX();
 		double dz = targetPos.z - boat.getZ();
-		double dist = Math.sqrt(dx * dx + dz * dz);
+		double distSq = dx * dx + dz * dz;
 
-		if (dist < WAYPOINT_REACH_DIST) {
+		if (distSq < WAYPOINT_REACH_DIST * WAYPOINT_REACH_DIST) {
 			targetPos = null;
 			retargetCooldown = WAYPOINT_REACHED_DELAY;
 			boat.setInput(false, false, false, false);
@@ -92,7 +91,7 @@ public class PilotBoatGoal extends Goal {
 		boat.setInput(
 			yawDiff < -5,
 			yawDiff > 5,
-			dist > WAYPOINT_REACH_DIST,
+			true,
 			false
 		);
 	}
@@ -116,19 +115,7 @@ public class PilotBoatGoal extends Goal {
 	}
 
 	private Vec3 findNearestPlayer() {
-		AABB searchBox = mob.getBoundingBox().inflate(PLAYER_SEARCH_RANGE);
-		List<Player> players = mob.level().getEntitiesOfClass(Player.class, searchBox,
-				p -> p.isAlive() && !p.isSpectator());
-
-		Player nearest = null;
-		double nearestDistSq = Double.MAX_VALUE;
-		for (Player p : players) {
-			double d = p.distanceToSqr(mob);
-			if (d < nearestDistSq) {
-				nearestDistSq = d;
-				nearest = p;
-			}
-		}
+		Player nearest = mob.level().getNearestPlayer(mob, PLAYER_SEARCH_RANGE);
 		return nearest != null ? nearest.position() : null;
 	}
 
