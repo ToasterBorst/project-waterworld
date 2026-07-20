@@ -103,7 +103,7 @@ public class SpawnPointMixin {
 		if (result != null) {
 			BlockPos biomePos = result.getFirst();
 			int surfaceY = level.getHeight(Heightmap.Types.OCEAN_FLOOR, biomePos.getX(), biomePos.getZ());
-			int spawnY = Math.max(surfaceY, WaterworldConstants.SEA_LEVEL);
+			int spawnY = Math.max(surfaceY, WaterworldConstants.seaLevel());
 			return new BlockPos(biomePos.getX(), spawnY, biomePos.getZ());
 		}
 

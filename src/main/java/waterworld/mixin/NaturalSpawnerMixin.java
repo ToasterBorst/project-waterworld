@@ -16,7 +16,7 @@ import waterworld.WaterworldConfig;
 import waterworld.WaterworldDetection;
 
 /**
- * Accepts water-filled spawn blocks for turtles so natural spawning can reach rule checks.
+ * Lets turtles treat open water as a valid empty spawn block.
  */
 @Mixin(NaturalSpawner.class)
 public class NaturalSpawnerMixin {

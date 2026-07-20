@@ -5,6 +5,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.PathType;
 
 import java.util.EnumSet;
 
@@ -20,6 +21,7 @@ public class SwimToLandGoal extends Goal {
 	private final Mob mob;
 	private BlockPos landTarget;
 	private int rescanTimer;
+	private float oldWaterMalus;
 
 	public SwimToLandGoal(Mob mob) {
 		this.mob = mob;
@@ -43,12 +45,16 @@ public class SwimToLandGoal extends Goal {
 
 	@Override
 	public void start() {
+		// Lift the water-avoidance malus while swimming out (FollowOwnerGoal pattern).
+		oldWaterMalus = mob.getPathfindingMalus(PathType.WATER);
+		mob.setPathfindingMalus(PathType.WATER, 0.0F);
 		rescanTimer = 0;
 		navigateToLand();
 	}
 
 	@Override
 	public void stop() {
+		mob.setPathfindingMalus(PathType.WATER, oldWaterMalus);
 		mob.getNavigation().stop();
 		landTarget = null;
 	}

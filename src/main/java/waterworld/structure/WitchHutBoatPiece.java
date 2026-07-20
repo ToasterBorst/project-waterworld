@@ -44,23 +44,39 @@ public class WitchHutBoatPiece extends TemplateStructurePiece {
 	public WitchHutBoatPiece(StructureTemplateManager manager, Identifier template,
 			BlockPos pos, RandomSource random) {
 		super(WaterworldStructures.WITCH_HUT_BOAT_PIECE, 0, manager, template,
-				template.toString(), makeSettings(random), pos);
+				template.toString(), makeSettings(Rotation.getRandom(random)), pos);
 	}
 
 	public WitchHutBoatPiece(StructurePieceSerializationContext context, CompoundTag tag) {
 		super(WaterworldStructures.WITCH_HUT_BOAT_PIECE, tag, context.structureTemplateManager(),
-				id -> makeSettings(null));
+				id -> makeSettings(tag.read("Rot", Rotation.LEGACY_CODEC).orElse(Rotation.NONE)));
+		// Legacy saves may have re-saved Rot=NONE while the placed blocks are rotated
+		// (pre-Rot chunks loaded once by a Rot-saving build). The saved rotation can't
+		// be trusted for coverage, so always widen to the union of all rotations.
+		this.boundingBox = boundingBoxForAnyRotation(this.template, this.templatePosition);
 	}
 
-	private static StructurePlaceSettings makeSettings(RandomSource random) {
-		Rotation rotation = random != null
-				? Rotation.getRandom(random)
-				: Rotation.NONE;
+	private static StructurePlaceSettings makeSettings(Rotation rotation) {
 		return new StructurePlaceSettings()
 				.setRotation(rotation)
 				.setKnownShape(true)
 				.setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING)
 				.addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
+	}
+
+	private static BoundingBox boundingBoxForAnyRotation(StructureTemplate template, BlockPos pos) {
+		BoundingBox box = null;
+		for (Rotation rotation : Rotation.values()) {
+			BoundingBox next = template.getBoundingBox(makeSettings(rotation), pos);
+			box = box == null ? next : BoundingBox.encapsulating(box, next);
+		}
+		return box;
+	}
+
+	@Override
+	protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
+		super.addAdditionalSaveData(context, tag);
+		tag.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
 	}
 
 	@Override

@@ -65,6 +65,8 @@ public class DismountBoatGoal extends Goal {
 
 	private boolean shouldDismount(AbstractBoat boat) {
 		if (boat.getStatus() == AbstractBoat.Status.ON_LAND) return true;
+		// Traders stay mounted at sea — tiny reefs/wrecks must not eject them.
+		if (mob instanceof WanderingTrader) return false;
 		if (boat.getStatus() != AbstractBoat.Status.IN_WATER) return false;
 		if (hasReasonToStayInBoat()) return false;
 		return hasNearbyLand(boat);

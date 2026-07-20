@@ -5,6 +5,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.AABB;
 
 import java.util.EnumSet;
@@ -24,6 +25,7 @@ public class MountNearbyBoatGoal extends Goal {
 	private final Mob mob;
 	private AbstractBoat targetBoat;
 	private int cooldown;
+	private float oldWaterMalus;
 
 	public MountNearbyBoatGoal(Mob mob) {
 		this.mob = mob;
@@ -58,11 +60,15 @@ public class MountNearbyBoatGoal extends Goal {
 
 	@Override
 	public void start() {
+		// Lift the water-avoidance malus while swimming to a boat (FollowOwnerGoal pattern).
+		oldWaterMalus = mob.getPathfindingMalus(PathType.WATER);
+		mob.setPathfindingMalus(PathType.WATER, 0.0F);
 		navigateToBoat();
 	}
 
 	@Override
 	public void stop() {
+		mob.setPathfindingMalus(PathType.WATER, oldWaterMalus);
 		mob.getNavigation().stop();
 		targetBoat = null;
 	}

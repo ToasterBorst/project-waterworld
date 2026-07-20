@@ -66,6 +66,9 @@ public class WaterworldConfigScreen extends Screen {
 		addBoolOption("Spawn Gear", config.spawnGear,
 				"Give players a bamboo chest raft with starter items on first spawn.",
 				v -> config.spawnGear = v);
+		addIntOption("Sea Level", config.seaLevel,
+				"Ocean waterline for ships and biomes (default 101). New worlds need matching noise_settings sea_level.",
+				v -> config.seaLevel = v);
 
 		addSectionKey("config.project-waterworld.section.guardians");
 		addBoolOption("Wild Guardian Spawns", config.wildGuardianSpawns,
@@ -104,6 +107,12 @@ public class WaterworldConfigScreen extends Screen {
 		addBoolOption("Drowned Can Go On Land", config.drownedCanGoOnLand,
 				"Drowned can roam on land instead of returning to water.",
 				v -> config.drownedCanGoOnLand = v);
+		addDoubleOption("Drowned Spawn Charge", config.drownedSpawnCharge,
+				"Vanilla spawn_costs charge for ocean drowned (0 = off, vanilla-style 0.15). Higher = sparser. Restart required.",
+				v -> config.drownedSpawnCharge = v);
+		addDoubleOption("Drowned Spawn Energy Budget", config.drownedSpawnEnergyBudget,
+				"Energy budget paired with drowned spawn charge (vanilla-style 0.7). Restart required.",
+				v -> config.drownedSpawnEnergyBudget = v);
 
 		addSectionKey("config.project-waterworld.section.turtles");
 		addBoolOption("Turtle Ocean Spawns", config.turtleOceanSpawns,

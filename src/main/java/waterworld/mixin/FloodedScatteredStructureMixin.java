@@ -37,7 +37,7 @@ public abstract class FloodedScatteredStructureMixin {
 		}
 
 		BoundingBox structureBox = pieces.calculateBoundingBox();
-		int maxY = Math.min(structureBox.maxY(), WaterworldConstants.SEA_LEVEL - 1);
+		int maxY = Math.min(structureBox.maxY(), WaterworldConstants.seaLevel() - 1);
 
 		BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
 		for (int x = Math.max(structureBox.minX(), chunkBox.minX());

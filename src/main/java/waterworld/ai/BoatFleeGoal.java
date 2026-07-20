@@ -34,21 +34,26 @@ public class BoatFleeGoal extends Goal {
 
 	@Override
 	public boolean requiresUpdateEveryTick() {
-		return mob.getVehicle() instanceof AbstractBoat;
+		return isControllingBoat();
 	}
 
 	@Override
 	public boolean canUse() {
-		if (!(mob.getVehicle() instanceof AbstractBoat)) return false;
+		if (!isControllingBoat()) return false;
 		threat = findNearestThreat();
 		return threat != null;
 	}
 
 	@Override
 	public boolean canContinueToUse() {
-		if (!(mob.getVehicle() instanceof AbstractBoat)) return false;
+		if (!isControllingBoat()) return false;
 		if (threat == null || !threat.isAlive()) return false;
 		return mob.distanceToSqr(threat) < SAFE_RANGE_SQ;
+	}
+
+	private boolean isControllingBoat() {
+		return mob.getVehicle() instanceof AbstractBoat boat
+				&& boat.getControllingPassenger() == mob;
 	}
 
 	@Override

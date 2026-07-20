@@ -96,7 +96,7 @@ public class WaterworldBiomeSource extends BiomeSource {
 		Holder<Biome> biome = this.overworld.getNoiseBiome(quartX, quartY, quartZ, sampler);
 		int blockY = quartToBlockY(quartY);
 
-		if (blockY >= WaterworldConstants.SEA_LEVEL - BIOME_FUZZ_BUFFER) {
+		if (blockY >= WaterworldConstants.seaLevel() - BIOME_FUZZ_BUFFER) {
 			if (!isOcean(biome)) {
 				return biome;
 			}
@@ -129,7 +129,7 @@ public class WaterworldBiomeSource extends BiomeSource {
 	 */
 	@Override
 	public Set<Holder<Biome>> getBiomesWithin(int blockX, int blockY, int blockZ, int blockRadius, Climate.Sampler sampler) {
-		if (blockY > WaterworldConstants.SEA_LEVEL) {
+		if (blockY > WaterworldConstants.seaLevel()) {
 			return super.getBiomesWithin(blockX, blockY, blockZ, blockRadius, sampler);
 		}
 		int minQX = QuartPos.fromBlock(blockX - blockRadius);

@@ -7,3 +7,4 @@ accessible field net/minecraft/world/entity/Mob goalSelector Lnet/minecraft/worl
 accessible method net/minecraft/world/entity/monster/PatrollingMonster setPatrolling (Z)V
 accessible method net/minecraft/world/entity/vehicle/boat/AbstractBoat controlBoat ()V
 accessible method net/minecraft/world/entity/animal/feline/Cat setVariant (Lnet/minecraft/core/Holder;)V
+accessible method net/minecraft/world/entity/animal/equine/Llama setVariant (Lnet/minecraft/world/entity/animal/equine/Llama$Variant;)V

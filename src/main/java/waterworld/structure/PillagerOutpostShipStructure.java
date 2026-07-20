@@ -17,7 +17,7 @@ import java.util.Optional;
 /**
  * Pillager outpost ship — places one of three NBT variants at fixed sea level.
  * Horizontal position follows the structure set / world seed; Y is always
- * {@link WaterworldConstants#SEA_LEVEL}. Bottom 8 blocks of the template are
+ * {@link WaterworldConstants#seaLevel()}. Bottom 8 blocks of the template are
  * submerged so the waterline in the NBT aligns with the ocean surface.
  */
 public class PillagerOutpostShipStructure extends Structure {
@@ -51,7 +51,7 @@ public class PillagerOutpostShipStructure extends Structure {
 		int z = chunkPos.getMiddleBlockZ();
 
 		// Align NBT waterline (local Y 0–7) with sea level; no +1 — ships sat 1 block high.
-		int startY = WaterworldConstants.SEA_LEVEL - SUBMERGED_BLOCKS;
+		int startY = WaterworldConstants.seaLevel() - SUBMERGED_BLOCKS;
 		BlockPos pos = new BlockPos(x, startY, z);
 
 		RandomSource random = context.random();

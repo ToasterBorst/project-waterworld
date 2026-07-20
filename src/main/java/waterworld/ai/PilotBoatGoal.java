@@ -39,17 +39,22 @@ public class PilotBoatGoal extends Goal {
 	@Override
 	public boolean requiresUpdateEveryTick() {
 		// Boat input must refresh every tick while piloting; idle when not aboard.
-		return mob.getVehicle() instanceof AbstractBoat;
+		return isControllingBoat();
 	}
 
 	@Override
 	public boolean canUse() {
-		return mob.getVehicle() instanceof AbstractBoat;
+		return isControllingBoat();
 	}
 
 	@Override
 	public boolean canContinueToUse() {
-		return mob.getVehicle() instanceof AbstractBoat;
+		return isControllingBoat();
+	}
+
+	private boolean isControllingBoat() {
+		return mob.getVehicle() instanceof AbstractBoat boat
+				&& boat.getControllingPassenger() == mob;
 	}
 
 	@Override

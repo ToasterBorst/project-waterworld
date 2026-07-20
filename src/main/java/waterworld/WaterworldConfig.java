@@ -32,16 +32,31 @@ public final class WaterworldConfig {
 	public boolean spawnIsland = false;
 	public boolean spawnGear = true;
 
+	/**
+	 * Ocean waterline for structures/biomes. Keep in sync with noise_settings
+	 * {@code sea_level} for new worlds (default {@link WaterworldConstants#DEFAULT_SEA_LEVEL}).
+	 */
+	public int seaLevel = WaterworldConstants.DEFAULT_SEA_LEVEL;
+
 	public int guardianSpawnWeight = 1;
 	public int turtleSpawnWeight = 5;
-	public double guardianSpawnChance = 0.04;
-	public double drownedRiderChance = 0.12;
+	public double guardianSpawnChance = 0.01;
+	/** Wild guardians usually arrive "wrangled" away from monuments by a drowned rider. */
+	public double drownedRiderChance = 0.85;
+	/**
+	 * Vanilla {@code spawn_costs} charge for drowned in ocean biomes (0 = disabled).
+	 * Limits local packing via {@code SpawnState.canSpawn}; restart required.
+	 * Vanilla-style pair (e.g. soul sand valley) is charge 0.15 / budget 0.7.
+	 */
+	public double drownedSpawnCharge = 0.15;
+	/** Energy budget paired with {@link #drownedSpawnCharge} (vanilla spawn_costs). */
+	public double drownedSpawnEnergyBudget = 0.7;
 	public double tridentRiderChance = 0.20;
 	public double pillagerArmorChance = 0.3;
 	public boolean armorScalesWithDifficulty = true;
 
 	public int tridentDrownedMinDays = 10;
-	public int guardianMinDays = 3;
+	public int guardianMinDays = 5;
 	public int guardianFullStrengthDays = 20;
 	public int patrolMinDays = 5;
 	public int patrolFullStrengthDays = 24;
@@ -180,11 +195,20 @@ public final class WaterworldConfig {
 		spawnOceanBiome = getString(props, "spawn_ocean_biome", spawnOceanBiome);
 		spawnIsland = getBool(props, "spawn_island", spawnIsland);
 		spawnGear = getBool(props, "spawn_gear", spawnGear);
+		seaLevel = getInt(props, "sea_level", seaLevel);
 
 		guardianSpawnWeight = getInt(props, "guardian_spawn_weight", guardianSpawnWeight);
 		turtleSpawnWeight = getInt(props, "turtle_spawn_weight", turtleSpawnWeight);
 		guardianSpawnChance = getDouble(props, "guardian_spawn_chance", guardianSpawnChance);
 		drownedRiderChance = getDouble(props, "drowned_rider_chance", drownedRiderChance);
+		drownedSpawnCharge = getDouble(props, "drowned_spawn_charge", drownedSpawnCharge);
+		drownedSpawnEnergyBudget = getDouble(props, "drowned_spawn_energy_budget", drownedSpawnEnergyBudget);
+		// A prior release shipped these inverted (charge 1.0 / budget 0.15), which
+		// suppressed nearly all ocean drowned and flooded oceans with guardians.
+		if (drownedSpawnCharge == 1.0 && drownedSpawnEnergyBudget == 0.15) {
+			drownedSpawnCharge = 0.15;
+			drownedSpawnEnergyBudget = 0.7;
+		}
 		tridentRiderChance = getDouble(props, "trident_rider_chance", tridentRiderChance);
 		pillagerArmorChance = getDouble(props, "pillager_armor_chance", pillagerArmorChance);
 		armorScalesWithDifficulty = getBool(props, "armor_scales_with_difficulty", armorScalesWithDifficulty);
@@ -206,10 +230,13 @@ public final class WaterworldConfig {
 		activationMode = normalizeActivationMode(activationMode);
 		if (spawnOceanBiome == null) spawnOceanBiome = "";
 
+		seaLevel = Math.max(32, Math.min(200, seaLevel));
 		guardianSpawnWeight = Math.max(0, guardianSpawnWeight);
 		turtleSpawnWeight = Math.max(0, turtleSpawnWeight);
 		guardianSpawnChance = clamp01(guardianSpawnChance);
 		drownedRiderChance = clamp01(drownedRiderChance);
+		drownedSpawnCharge = Math.max(0.0, drownedSpawnCharge);
+		drownedSpawnEnergyBudget = Math.max(0.0, drownedSpawnEnergyBudget);
 		tridentRiderChance = clamp01(tridentRiderChance);
 		pillagerArmorChance = clamp01(pillagerArmorChance);
 
@@ -263,6 +290,11 @@ public final class WaterworldConfig {
 					# Give players a bamboo chest raft with starter items on first spawn
 					spawn_gear=%s
 
+					# Ocean waterline for ships/biomes (default 101). For new worlds, keep
+					# data/project-waterworld/worldgen/noise_settings/waterworld.json sea_level
+					# equal to this value. Existing chunks are not re-flooded.
+					sea_level=%d
+
 					# --- Guardians & Drowned ---
 
 					# Wild guardian spawns in ocean biomes (outside monuments)
@@ -301,6 +333,12 @@ public final class WaterworldConfig {
 
 					# Drowned can roam on land instead of returning to water
 					drowned_can_go_on_land=%s
+
+					# Vanilla spawn_costs for ocean drowned (restart required). charge=0 disables.
+					# Limits local packing so oceans stay threatening without stacking endlessly.
+					# Vanilla-style values: charge=0.15, energy_budget=0.7 (higher charge = sparser).
+					drowned_spawn_charge=%s
+					drowned_spawn_energy_budget=%s
 
 					# --- Turtles ---
 
@@ -354,6 +392,7 @@ public final class WaterworldConfig {
 					spawnOceanBiome,
 					spawnIsland,
 					spawnGear,
+					seaLevel,
 					wildGuardianSpawns,
 					guardianSpawnWeight,
 					formatDouble(guardianSpawnChance),
@@ -366,6 +405,8 @@ public final class WaterworldConfig {
 					formatDouble(tridentRiderChance),
 					tridentDrownedMinDays,
 					drownedCanGoOnLand,
+					formatDouble(drownedSpawnCharge),
+					formatDouble(drownedSpawnEnergyBudget),
 					turtleOceanSpawns,
 					turtleSpawnWeight,
 					oceanPillagerPatrols,

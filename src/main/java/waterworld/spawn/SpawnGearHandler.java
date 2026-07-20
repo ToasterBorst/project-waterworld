@@ -36,7 +36,7 @@ public final class SpawnGearHandler {
 
 		BlockPos waterPos = BoatSpawnHelper.findWaterSurface(level, player.blockPosition(), 15);
 		if (waterPos == null) {
-			waterPos = new BlockPos(player.getBlockX(), WaterworldConstants.SEA_LEVEL, player.getBlockZ());
+			waterPos = new BlockPos(player.getBlockX(), WaterworldConstants.seaLevel(), player.getBlockZ());
 		}
 
 		double x = waterPos.getX() + 0.5;

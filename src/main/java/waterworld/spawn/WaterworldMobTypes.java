@@ -1,12 +1,12 @@
 package waterworld.spawn;
 
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.animal.equine.TraderLlama;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.monster.illager.Evoker;
 import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.monster.illager.Vindicator;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 
 /**
@@ -20,11 +20,13 @@ public final class WaterworldMobTypes {
 		return isHostileBoatPilot(mob)
 				|| mob instanceof Ravager
 				|| mob instanceof WanderingTrader
-				|| mob instanceof TraderLlama;
+				|| mob instanceof Villager;
 	}
 
 	public static boolean canPilotBoats(Mob mob) {
-		return isHostileBoatPilot(mob) || mob instanceof WanderingTrader;
+		return isHostileBoatPilot(mob)
+				|| mob instanceof WanderingTrader
+				|| mob instanceof Villager;
 	}
 
 	public static boolean isHostileBoatPilot(Mob mob) {

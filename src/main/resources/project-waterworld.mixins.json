@@ -18,7 +18,10 @@
     "ScatteredFeatureSeabedMixin",
     "FloodedScatteredStructureMixin",
     "StructureSeedMapBiomeMixin",
-    "OceanMonumentTerrainMixin"
+    "OceanMonumentTerrainMixin",
+    "NoiseBasedChunkGeneratorMixin",
+    "MoveControlMixin",
+    "RangedCrossbowAttackGoalMixin"
   ],
   "client": [],
   "server": [],

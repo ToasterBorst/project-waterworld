@@ -6,9 +6,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.StructureManager;
@@ -27,39 +24,57 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.loot.LootTable;
-import waterworld.ProjectWaterworld;
-import waterworld.WaterworldConstants;
 
 import java.util.List;
 
+/**
+ * Pillager outpost ship piece. Pillagers are not placed at generation — the
+ * garrison refills from datapack {@code spawn_overrides} via vanilla
+ * {@code NaturalSpawner} (same as land outposts).
+ */
 public class PillagerOutpostShipPiece extends TemplateStructurePiece {
 
 	private static final ResourceKey<LootTable> LOOT_TABLE = ResourceKey.create(
 			Registries.LOOT_TABLE,
 			Identifier.withDefaultNamespace("chests/pillager_outpost"));
 
-	private static final int INITIAL_PILLAGERS = 5;
-
 	public PillagerOutpostShipPiece(StructureTemplateManager manager, Identifier template,
 			BlockPos pos, RandomSource random) {
 		super(WaterworldStructures.PILLAGER_OUTPOST_SHIP_PIECE, 0, manager, template,
-				template.toString(), makeSettings(random), pos);
+				template.toString(), makeSettings(Rotation.getRandom(random)), pos);
 	}
 
 	public PillagerOutpostShipPiece(StructurePieceSerializationContext context, CompoundTag tag) {
 		super(WaterworldStructures.PILLAGER_OUTPOST_SHIP_PIECE, tag, context.structureTemplateManager(),
-				id -> makeSettings(null));
+				id -> makeSettings(tag.read("Rot", Rotation.LEGACY_CODEC).orElse(Rotation.NONE)));
+		// Legacy saves may have re-saved Rot=NONE while the placed blocks are rotated
+		// (pre-Rot chunks loaded once by a Rot-saving build). The saved rotation can't
+		// be trusted for coverage, so always widen to the union of all rotations —
+		// water columns cost nothing, missing the real deck costs everything.
+		this.boundingBox = boundingBoxForAnyRotation(this.template, this.templatePosition);
 	}
 
-	private static StructurePlaceSettings makeSettings(RandomSource random) {
-		Rotation rotation = random != null
-				? Rotation.getRandom(random)
-				: Rotation.NONE;
+	private static StructurePlaceSettings makeSettings(Rotation rotation) {
 		return new StructurePlaceSettings()
 				.setRotation(rotation)
 				.setKnownShape(true)
 				.setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING)
 				.addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
+	}
+
+	private static BoundingBox boundingBoxForAnyRotation(StructureTemplate template, BlockPos pos) {
+		BoundingBox box = null;
+		for (Rotation rotation : Rotation.values()) {
+			BoundingBox next = template.getBoundingBox(makeSettings(rotation), pos);
+			box = box == null ? next : BoundingBox.encapsulating(box, next);
+		}
+		return box;
+	}
+
+	@Override
+	protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
+		super.addAdditionalSaveData(context, tag);
+		tag.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
 	}
 
 	@Override
@@ -74,7 +89,6 @@ public class PillagerOutpostShipPiece extends TemplateStructurePiece {
 		super.postProcess(level, structureManager, generator, random, chunkBox, chunkPos, pivot);
 		clearFloodedAirBlocks(level, chunkBox);
 		setChestLoot(level, chunkBox, random);
-		spawnInitialPillagers(level, chunkBox, random);
 	}
 
 	/**
@@ -119,56 +133,5 @@ public class PillagerOutpostShipPiece extends TemplateStructurePiece {
 				container.setLootTable(LOOT_TABLE, random.nextLong());
 			}
 		}
-	}
-
-	private void spawnInitialPillagers(WorldGenLevel level, BoundingBox chunkBox, RandomSource random) {
-		if (!(level instanceof ServerLevelAccessor serverLevel)) return;
-
-		BoundingBox bb = this.getBoundingBox();
-		int minDeckY = Math.max(bb.minY(), WaterworldConstants.SEA_LEVEL);
-
-		try {
-			boolean spawnedLeader = false;
-			int spawned = 0;
-
-			for (int attempt = 0; attempt < 40 && spawned < INITIAL_PILLAGERS; attempt++) {
-				int x = bb.minX() + random.nextInt(Math.max(1, bb.getXSpan()));
-				int z = bb.minZ() + random.nextInt(Math.max(1, bb.getZSpan()));
-
-				BlockPos floor = findDeckFloor(level, x, z, minDeckY, bb.maxY());
-				if (floor == null || !chunkBox.isInside(floor)) continue;
-
-				Pillager pillager = EntityTypes.PILLAGER.create(
-						serverLevel.getLevel(), EntitySpawnReason.STRUCTURE);
-				if (pillager == null) continue;
-
-				pillager.setPersistenceRequired();
-				if (!spawnedLeader) {
-					pillager.setPatrolLeader(true);
-					spawnedLeader = true;
-				}
-				pillager.finalizeSpawn(serverLevel, level.getCurrentDifficultyAt(floor),
-						EntitySpawnReason.STRUCTURE, null);
-				pillager.snapTo(floor.getX() + 0.5, floor.getY(), floor.getZ() + 0.5,
-						random.nextFloat() * 360.0F, 0.0F);
-				serverLevel.addFreshEntityWithPassengers(pillager);
-				spawned++;
-			}
-		} catch (Exception e) {
-			ProjectWaterworld.LOGGER.warn("Failed to spawn pillager outpost ship mobs: {}",
-					e.getMessage());
-		}
-	}
-
-	private static BlockPos findDeckFloor(WorldGenLevel level, int x, int z, int minY, int maxY) {
-		for (int y = maxY; y >= minY; y--) {
-			BlockPos pos = new BlockPos(x, y, z);
-			if (level.getBlockState(pos.below()).isSolidRender()
-					&& level.getBlockState(pos).isAir()
-					&& level.getBlockState(pos.above()).isAir()) {
-				return pos;
-			}
-		}
-		return null;
 	}
 }

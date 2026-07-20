@@ -31,23 +31,28 @@ public class BoatApproachPlayerGoal extends Goal {
 
 	@Override
 	public boolean requiresUpdateEveryTick() {
-		return mob.getVehicle() instanceof AbstractBoat;
+		return isControllingBoat();
 	}
 
 	@Override
 	public boolean canUse() {
-		if (!(mob.getVehicle() instanceof AbstractBoat)) return false;
+		if (!isControllingBoat()) return false;
 		targetPlayer = findNearestPlayer();
 		return targetPlayer != null;
 	}
 
 	@Override
 	public boolean canContinueToUse() {
-		if (!(mob.getVehicle() instanceof AbstractBoat)) return false;
+		if (!isControllingBoat()) return false;
 		if (targetPlayer == null || !targetPlayer.isAlive() || targetPlayer.isSpectator()) {
 			return false;
 		}
 		return mob.distanceToSqr(targetPlayer) < SEARCH_RANGE * SEARCH_RANGE;
+	}
+
+	private boolean isControllingBoat() {
+		return mob.getVehicle() instanceof AbstractBoat boat
+				&& boat.getControllingPassenger() == mob;
 	}
 
 	@Override

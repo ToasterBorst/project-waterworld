@@ -35,7 +35,7 @@ public final class SpawnIslandGenerator {
 	}
 
 	public static int generate(ServerLevel level, int centerX, int centerZ) {
-		int seaLevel = WaterworldConstants.SEA_LEVEL;
+		int seaLevel = WaterworldConstants.seaLevel();
 		long seed = level.getSeed();
 
 		SimplexNoise warpNoise = new SimplexNoise(RandomSource.create(seed ^ NOISE_SALT_WARP));

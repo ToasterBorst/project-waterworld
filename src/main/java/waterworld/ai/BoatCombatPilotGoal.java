@@ -50,14 +50,19 @@ public class BoatCombatPilotGoal extends Goal {
 
 	@Override
 	public boolean requiresUpdateEveryTick() {
-		return mob.getVehicle() instanceof AbstractBoat;
+		return isControllingBoat();
 	}
 
 	@Override
 	public boolean canUse() {
-		return mob.getVehicle() instanceof AbstractBoat
+		return isControllingBoat()
 				&& mob.getTarget() != null
 				&& mob.getTarget().isAlive();
+	}
+
+	private boolean isControllingBoat() {
+		return mob.getVehicle() instanceof AbstractBoat boat
+				&& boat.getControllingPassenger() == mob;
 	}
 
 	@Override
