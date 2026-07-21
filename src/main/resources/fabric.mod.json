@@ -3,7 +3,7 @@
 	"id": "project-waterworld",
 	"version": "${version}",
 	"name": "Waterworld",
-	"description": "Inspired by Skyblock, except you're Kevin Costner. Waterworld. Get it? The world is water. Flooded. Higher sea level, natural seabed, vanilla (mods supported) biome distribution in the air column for all your building and farming needs. Lots of little tweaks for difficulty and fun, like wandering traders and illager patrols on boats!",
+	"description": "Inspired by Skyblock, except you're Kevin Costner. Waterworld. Get it? The world is water. Flooded. Higher sea level, natural seabed, vanilla (mods supported) biome distribution in the air column for all your building and farming needs. Lots of little tweaks for difficulty and fun, like wandering traders and pillager patrols on boats!",
 	"authors": [
 		"ToasterBorst"
 	],
