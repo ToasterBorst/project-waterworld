@@ -92,6 +92,9 @@ public class WaterworldConfigScreen extends Screen {
 		addDoubleOption("Drowned Rider Chance", config.drownedRiderChance,
 				"Chance a wild guardian spawns with a drowned rider (0.0-1.0).",
 				v -> config.drownedRiderChance = v);
+		addDoubleOption("Mounted Guardian Speed", config.mountedGuardianSpeedFactor,
+				"Guardian swim speed factor while a drowned is riding (0.1-1.0; 1.0 = off). Bare guardians unchanged.",
+				v -> config.mountedGuardianSpeedFactor = v);
 		addIntOption("Drowned Rider Min Days", config.drownedRiderMinDays,
 				"Days before drowned riders appear on guardians.",
 				v -> config.drownedRiderMinDays = v);

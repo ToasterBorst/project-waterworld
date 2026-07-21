@@ -44,6 +44,11 @@ public final class WaterworldConfig {
 	/** Wild guardians usually arrive "wrangled" away from monuments by a drowned rider. */
 	public double drownedRiderChance = 0.85;
 	/**
+	 * Multiplies guardian {@code MOVEMENT_SPEED} while a drowned is riding
+	 * ({@code 1.0} = off). Default {@code 0.55} ≈ 0.275 effective speed so boats can escape.
+	 */
+	public double mountedGuardianSpeedFactor = 0.55;
+	/**
 	 * Vanilla {@code spawn_costs} charge for drowned in ocean biomes (0 = disabled).
 	 * Limits local packing via {@code SpawnState.canSpawn}; restart required.
 	 * Vanilla-style pair (e.g. soul sand valley) is charge 0.15 / budget 0.7.
@@ -201,6 +206,7 @@ public final class WaterworldConfig {
 		turtleSpawnWeight = getInt(props, "turtle_spawn_weight", turtleSpawnWeight);
 		guardianSpawnChance = getDouble(props, "guardian_spawn_chance", guardianSpawnChance);
 		drownedRiderChance = getDouble(props, "drowned_rider_chance", drownedRiderChance);
+		mountedGuardianSpeedFactor = getDouble(props, "mounted_guardian_speed_factor", mountedGuardianSpeedFactor);
 		drownedSpawnCharge = getDouble(props, "drowned_spawn_charge", drownedSpawnCharge);
 		drownedSpawnEnergyBudget = getDouble(props, "drowned_spawn_energy_budget", drownedSpawnEnergyBudget);
 		// A prior release shipped these inverted (charge 1.0 / budget 0.15), which
@@ -235,6 +241,7 @@ public final class WaterworldConfig {
 		turtleSpawnWeight = Math.max(0, turtleSpawnWeight);
 		guardianSpawnChance = clamp01(guardianSpawnChance);
 		drownedRiderChance = clamp01(drownedRiderChance);
+		mountedGuardianSpeedFactor = Math.max(0.1, Math.min(1.0, mountedGuardianSpeedFactor));
 		drownedSpawnCharge = Math.max(0.0, drownedSpawnCharge);
 		drownedSpawnEnergyBudget = Math.max(0.0, drownedSpawnEnergyBudget);
 		tridentRiderChance = clamp01(tridentRiderChance);
@@ -319,6 +326,10 @@ public final class WaterworldConfig {
 					# Chance a wild guardian spawns with a drowned rider (0.0-1.0)
 					drowned_rider_chance=%s
 
+					# Multiplies guardian swim speed while a drowned is riding (0.1-1.0; 1.0 = off).
+					# Bare guardians are unchanged. Default 0.55 lets boats escape continuous chase.
+					mounted_guardian_speed_factor=%s
+
 					# Days before drowned riders appear on guardians
 					drowned_rider_min_days=%d
 
@@ -400,6 +411,7 @@ public final class WaterworldConfig {
 					guardianFullStrengthDays,
 					drownedRideGuardians,
 					formatDouble(drownedRiderChance),
+					formatDouble(mountedGuardianSpeedFactor),
 					drownedRiderMinDays,
 					drownedRiderFullStrengthDays,
 					formatDouble(tridentRiderChance),

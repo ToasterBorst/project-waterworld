@@ -50,10 +50,9 @@ public class WitchHutBoatPiece extends TemplateStructurePiece {
 	public WitchHutBoatPiece(StructurePieceSerializationContext context, CompoundTag tag) {
 		super(WaterworldStructures.WITCH_HUT_BOAT_PIECE, tag, context.structureTemplateManager(),
 				id -> makeSettings(tag.read("Rot", Rotation.LEGACY_CODEC).orElse(Rotation.NONE)));
-		// Legacy saves may have re-saved Rot=NONE while the placed blocks are rotated
-		// (pre-Rot chunks loaded once by a Rot-saving build). The saved rotation can't
-		// be trusted for coverage, so always widen to the union of all rotations.
-		this.boundingBox = boundingBoxForAnyRotation(this.template, this.templatePosition);
+		// Same outpost scar: Rot may be NONE while blocks are rotated. Widen so
+		// spawn_overrides "piece" checks cover the real cabin, not a water prism.
+		widenBoundingBoxForSpawnOverrides();
 	}
 
 	private static StructurePlaceSettings makeSettings(Rotation rotation) {
@@ -64,13 +63,18 @@ public class WitchHutBoatPiece extends TemplateStructurePiece {
 				.addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
 	}
 
-	private static BoundingBox boundingBoxForAnyRotation(StructureTemplate template, BlockPos pos) {
+	/**
+	 * Encapsulate every rotation's template AABB so PIECE spawn_overrides cannot
+	 * miss the cabin after a poisoned {@code Rot=NONE} save. Water columns in the
+	 * union are harmless; missing the real footprint blocks NATURAL witches.
+	 */
+	private void widenBoundingBoxForSpawnOverrides() {
 		BoundingBox box = null;
 		for (Rotation rotation : Rotation.values()) {
-			BoundingBox next = template.getBoundingBox(makeSettings(rotation), pos);
+			BoundingBox next = this.template.getBoundingBox(makeSettings(rotation), this.templatePosition);
 			box = box == null ? next : BoundingBox.encapsulating(box, next);
 		}
-		return box;
+		this.boundingBox = box;
 	}
 
 	@Override
@@ -91,7 +95,11 @@ public class WitchHutBoatPiece extends TemplateStructurePiece {
 		super.postProcess(level, structureManager, generator, random, chunkBox, chunkPos, pivot);
 		clearFloodedAirBlocks(level, chunkBox);
 		setChestLoot(level, chunkBox, random);
+		// Initial STRUCTURE mobs use the tight rotated BB (center of cabin).
 		spawnInitialMobs(level, chunkBox, random);
+		// Widen afterward so the first chunk save already covers all rotations for
+		// vanilla NaturalSpawner spawn_overrides (same as load-time path).
+		widenBoundingBoxForSpawnOverrides();
 	}
 
 	/**
