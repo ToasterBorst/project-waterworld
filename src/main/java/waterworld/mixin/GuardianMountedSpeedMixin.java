@@ -30,14 +30,20 @@ public abstract class GuardianMountedSpeedMixin {
 	private void waterworld$syncMountedSpeed(CallbackInfo ci) {
 		Guardian guardian = (Guardian) (Object) this;
 		if (guardian.level().isClientSide()) return;
+		if (!WaterworldDetection.isActive()) return;
 
+		double factor = WaterworldConfig.INSTANCE.mountedGuardianSpeedFactor;
 		AttributeInstance speed = guardian.getAttribute(Attributes.MOVEMENT_SPEED);
 		if (speed == null) return;
 
-		double factor = WaterworldConfig.INSTANCE.mountedGuardianSpeedFactor;
-		boolean shouldSlow = WaterworldDetection.isActive()
-				&& factor < 1.0
-				&& waterworld$hasDrownedPassenger(guardian);
+		if (factor >= 1.0) {
+			if (speed.hasModifier(MOUNTED_SPEED_ID)) {
+				speed.removeModifier(MOUNTED_SPEED_ID);
+			}
+			return;
+		}
+
+		boolean shouldSlow = waterworld$hasDrownedPassenger(guardian);
 
 		if (shouldSlow) {
 			speed.addOrUpdateTransientModifier(new AttributeModifier(

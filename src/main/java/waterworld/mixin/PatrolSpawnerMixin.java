@@ -96,7 +96,8 @@ public class PatrolSpawnerMixin {
 			pillager.finalizeSpawn(level, level.getCurrentDifficultyAt(memberPos),
 					EntitySpawnReason.PATROL, null);
 
-			MobEquipmentHelper.equipRandomArmor(pillager, level.getDifficulty(), level.getRandom());
+			MobEquipmentHelper.equipRandomArmor(pillager, level.getDifficulty(),
+					level.getRandom(), level.getGameTime());
 
 			level.addFreshEntity(pillager);
 			spawned.add(pillager);

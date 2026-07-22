@@ -8,6 +8,7 @@
     "TurtleSpawnMixin",
     "SpawnPlacementsMixin",
     "NaturalSpawnerMixin",
+    "StructureManagerMixin",
     "DrownedRiderMixin",
     "DrownedLandMixin",
     "DrownedEquipmentMixin",

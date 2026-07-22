@@ -377,7 +377,8 @@ public final class WaterworldConfig {
 					# Base chance per armor piece for illagers (0.0-1.0)
 					pillager_armor_chance=%s
 
-					# Whether armor tier scales with world difficulty setting
+					# Armor chance/tier scales with game difficulty (Easy/Normal/Hard)
+					# and ramps with world age from patrol_min_days to patrol_full_strength_days
 					armor_scales_with_difficulty=%s
 
 					# --- Wandering Traders ---

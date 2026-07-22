@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.pathfinder.PathType;
 import waterworld.ProjectWaterworld;
 import waterworld.WaterworldConfig;
@@ -81,25 +82,36 @@ public final class WaterworldSpawns {
 
 	private static void registerEntityLoadEvents() {
 		ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
-			if (!(level instanceof ServerLevel)) return;
+			if (!(level instanceof ServerLevel serverLevel)) return;
 			if (!WaterworldDetection.isActive()) return;
 			if (!(entity instanceof Mob mob)) return;
+
+			if (!WaterworldMobTypes.canDismountBoats(mob)
+					&& !WaterworldMobTypes.canPilotBoats(mob)
+					&& !WaterworldMobTypes.shouldOpenDoors(mob)
+					&& !WaterworldMobTypes.isHostileBoatPilot(mob)
+					&& !MobEquipmentHelper.shouldEquipArmor(mob)) {
+				return;
+			}
 
 			injectBoatGoals(mob);
 			injectDoorGoals(mob);
 			injectWaterAvoidance(mob);
+			MobEquipmentHelper.tryEquipArmorOnLoad(mob, serverLevel);
 		});
 	}
 
 	private static void injectBoatGoals(Mob mob) {
-		boolean canDismount = WaterworldMobTypes.canDismountBoats(mob);
-		boolean canPilot = WaterworldMobTypes.canPilotBoats(mob);
-		if (!canDismount && !canPilot) return;
-		BoatSpawnHelper.addBoatAI(mob, canPilot);
+		if (!WaterworldMobTypes.canDismountBoats(mob) && !WaterworldMobTypes.canPilotBoats(mob)) {
+			return;
+		}
+		// Base goals only; spawn sites add pilot goals with the correct role.
+		BoatSpawnHelper.addBaseBoatGoals(mob);
 	}
 
 	private static void injectDoorGoals(Mob mob) {
 		if (!WaterworldMobTypes.shouldOpenDoors(mob)) return;
+		if (mob instanceof Villager) return;
 		if (hasDoorGoal(mob)) return;
 
 		mob.getNavigation().setCanOpenDoors(true);
@@ -136,7 +148,11 @@ public final class WaterworldSpawns {
 	}
 
 	private static boolean hasDoorGoal(Mob mob) {
-		return mob.goalSelector.getAvailableGoals().stream()
-				.anyMatch(wg -> wg.getGoal() instanceof OpenDoorGoal);
+		for (WrappedGoal wg : mob.goalSelector.getAvailableGoals()) {
+			if (wg.getGoal() instanceof OpenDoorGoal) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

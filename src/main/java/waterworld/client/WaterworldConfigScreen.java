@@ -142,7 +142,7 @@ public class WaterworldConfigScreen extends Screen {
 				"Base chance per armor piece for illagers (0.0-1.0).",
 				v -> config.pillagerArmorChance = v);
 		addBoolOption("Armor Scales With Difficulty", config.armorScalesWithDifficulty,
-				"Whether armor tier scales with the world difficulty setting.",
+				"Armor chance/tier scales with game difficulty and ramps with world age (patrol day range).",
 				v -> config.armorScalesWithDifficulty = v);
 
 		addSectionKey("config.project-waterworld.section.traders");

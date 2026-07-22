@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,25 +65,29 @@ public final class BoatSpawnHelper {
 	}
 
 	/**
-	 * Adds boat AI goals to a mob, selecting role-specific goals based on type.
-	 * Skips addition if goals are already present (prevents accumulation from
-	 * repeated ENTITY_LOAD events).
-	 *
-	 * @param canPilot if true, adds piloting goals (for illagers/traders);
-	 *                 if false, only adds DismountBoatGoal (for ravagers/llamas)
+	 * Adds mount/dismount/swim boat goals. Safe to call from ENTITY_LOAD.
 	 */
-	public static void addBoatAI(Mob mob, boolean canPilot) {
-		if (hasBoatGoals(mob)) return;
+	public static void addBaseBoatGoals(Mob mob) {
+		if (hasBaseBoatGoals(mob)) return;
 
 		WaterworldConfig config = WaterworldConfig.INSTANCE;
-		if (config.mobsCanExitBoats) {
+		if (config.mobsCanExitBoats && WaterworldMobTypes.canDismountBoats(mob)) {
 			mob.goalSelector.addGoal(1, new DismountBoatGoal(mob));
 		}
 
-		mob.goalSelector.addGoal(2, new MountNearbyBoatGoal(mob));
-		mob.goalSelector.addGoal(3, new SwimToLandGoal(mob));
+		if (WaterworldMobTypes.canDismountBoats(mob) || WaterworldMobTypes.canPilotBoats(mob)) {
+			mob.goalSelector.addGoal(2, new MountNearbyBoatGoal(mob));
+			mob.goalSelector.addGoal(3, new SwimToLandGoal(mob));
+		}
+	}
 
-		if (!canPilot || !config.mobsCanPilotBoats) return;
+	/**
+	 * Adds steering goals for boat pilots. Call from spawn sites with the correct role.
+	 */
+	public static void addPilotBoatGoals(Mob mob) {
+		WaterworldConfig config = WaterworldConfig.INSTANCE;
+		if (!config.mobsCanPilotBoats || !WaterworldMobTypes.canPilotBoats(mob)) return;
+		if (hasPilotBoatGoals(mob)) return;
 
 		if (WaterworldMobTypes.isHostileBoatPilot(mob)) {
 			mob.goalSelector.addGoal(0, new BoatCombatPilotGoal(mob));
@@ -96,10 +101,34 @@ public final class BoatSpawnHelper {
 		}
 	}
 
-	private static boolean hasBoatGoals(Mob mob) {
-		return mob.goalSelector.getAvailableGoals().stream()
-				.anyMatch(wg -> wg.getGoal() instanceof DismountBoatGoal
-						|| wg.getGoal() instanceof PilotBoatGoal
-						|| wg.getGoal() instanceof MountNearbyBoatGoal);
+	/**
+	 * Adds boat AI goals to a mob, selecting role-specific goals based on type.
+	 *
+	 * @param canPilot if true, adds piloting goals (for illagers/traders);
+	 *                 if false, only adds base mount/dismount goals
+	 */
+	public static void addBoatAI(Mob mob, boolean canPilot) {
+		addBaseBoatGoals(mob);
+		if (canPilot) {
+			addPilotBoatGoals(mob);
+		}
+	}
+
+	private static boolean hasBaseBoatGoals(Mob mob) {
+		for (WrappedGoal wg : mob.goalSelector.getAvailableGoals()) {
+			if (wg.getGoal() instanceof MountNearbyBoatGoal) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean hasPilotBoatGoals(Mob mob) {
+		for (WrappedGoal wg : mob.goalSelector.getAvailableGoals()) {
+			if (wg.getGoal() instanceof PilotBoatGoal) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

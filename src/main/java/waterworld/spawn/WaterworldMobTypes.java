@@ -4,6 +4,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.monster.illager.Evoker;
+import net.minecraft.world.entity.monster.illager.Illusioner;
 import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.monster.illager.Vindicator;
 import net.minecraft.world.entity.npc.villager.Villager;
@@ -33,10 +34,12 @@ public final class WaterworldMobTypes {
 		return mob instanceof Pillager
 				|| mob instanceof Vindicator
 				|| mob instanceof Evoker
+				|| mob instanceof Illusioner
 				|| mob instanceof Witch;
 	}
 
 	public static boolean shouldOpenDoors(Mob mob) {
-		return isHostileBoatPilot(mob);
+		return isHostileBoatPilot(mob)
+				|| mob instanceof WanderingTrader;
 	}
 }

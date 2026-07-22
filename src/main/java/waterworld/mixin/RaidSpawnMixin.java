@@ -52,7 +52,7 @@ public class RaidSpawnMixin {
 			moveToWaterIfNeeded(level, raider);
 
 			MobEquipmentHelper.equipRandomArmorForRaid(raider, level.getDifficulty(),
-					level.getRandom(), raid.getGroupsSpawned());
+					level.getRandom(), level.getGameTime(), raid.getGroupsSpawned());
 
 			if (raider instanceof Ravager) {
 				ravagers.add(raider);
@@ -136,6 +136,8 @@ public class RaidSpawnMixin {
 			pilot.snapTo(ravager.getX(), ravager.getY(), ravager.getZ(), 0.0f, 0.0f);
 			pilot.finalizeSpawn(level, level.getCurrentDifficultyAt(ravager.blockPosition()),
 					EntitySpawnReason.EVENT, null);
+			MobEquipmentHelper.equipRandomArmor(pilot, level.getDifficulty(),
+					level.getRandom(), level.getGameTime());
 			level.addFreshEntity(pilot);
 		}
 		return pilot;
