@@ -39,9 +39,13 @@ replay_*.log
 *.hprof
 *.jfr
 
-# decompiled sources
+# decompiled / agent-extracted Minecraft sources (never commit)
 
 net/
+.tmp-mc-sources/
+.tmp-mc-src/
+.tmp-mc-*/
+.gradle/mc-src*/
 
 # Local agent / author docs (not published to GitHub)
 docs/

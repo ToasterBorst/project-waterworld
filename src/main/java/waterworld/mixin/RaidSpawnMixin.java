@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldDetection;
 import waterworld.spawn.BoatSpawnHelper;
-import waterworld.spawn.MobEquipmentHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +38,6 @@ public class RaidSpawnMixin {
 		if (!config.oceanPillagerPatrols) return;
 		if (!WaterworldDetection.isActive()) return;
 
-		Raid raid = (Raid) (Object) this;
-
 		AABB area = new AABB(pos).inflate(32);
 		List<Raider> raiders = level.getEntitiesOfClass(Raider.class, area,
 				raider -> raider.getCurrentRaid() != null && !raider.isPassenger());
@@ -50,9 +47,6 @@ public class RaidSpawnMixin {
 
 		for (Raider raider : raiders) {
 			moveToWaterIfNeeded(level, raider);
-
-			MobEquipmentHelper.equipRandomArmorForRaid(raider, level.getDifficulty(),
-					level.getRandom(), level.getGameTime(), raid.getGroupsSpawned());
 
 			if (raider instanceof Ravager) {
 				ravagers.add(raider);
@@ -136,8 +130,6 @@ public class RaidSpawnMixin {
 			pilot.snapTo(ravager.getX(), ravager.getY(), ravager.getZ(), 0.0f, 0.0f);
 			pilot.finalizeSpawn(level, level.getCurrentDifficultyAt(ravager.blockPosition()),
 					EntitySpawnReason.EVENT, null);
-			MobEquipmentHelper.equipRandomArmor(pilot, level.getDifficulty(),
-					level.getRandom(), level.getGameTime());
 			level.addFreshEntity(pilot);
 		}
 		return pilot;

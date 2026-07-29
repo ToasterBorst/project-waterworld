@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
-import waterworld.ProjectWaterworld;
+import waterworld.WaterworldMod;
 
 /**
  * Registers custom structure <em>types</em> and piece codecs. The datapack
@@ -41,21 +41,21 @@ public final class WaterworldStructures {
 
 	public static void register() {
 		Registry.register(BuiltInRegistries.STRUCTURE_TYPE,
-				Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "witch_hut_boat"),
+				Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "witch_hut_boat"),
 				WITCH_HUT_BOAT_TYPE);
 
 		Registry.register(BuiltInRegistries.STRUCTURE_PIECE,
-				Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "witch_hut_boat"),
+				Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "witch_hut_boat"),
 				WITCH_HUT_BOAT_PIECE);
 
 		Registry.register(BuiltInRegistries.STRUCTURE_TYPE,
-				Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "pillager_outpost_ship"),
+				Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "pillager_outpost_ship"),
 				PILLAGER_OUTPOST_SHIP_TYPE);
 
 		Registry.register(BuiltInRegistries.STRUCTURE_PIECE,
-				Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "pillager_outpost_ship"),
+				Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "pillager_outpost_ship"),
 				PILLAGER_OUTPOST_SHIP_PIECE);
 
-		ProjectWaterworld.LOGGER.info("Registered Waterworld structures");
+		WaterworldMod.LOGGER.info("Registered Waterworld structures");
 	}
 }

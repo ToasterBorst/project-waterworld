@@ -7,12 +7,11 @@ Fabric. Server-side only for multiplayer — clients do not need the mod. Instal
 
 ## Features
 
-- **Waterworld** — Endless ocean at configurable sea level, default Y=101. Soft-faded vanilla seabed (~Y23–83), with vanilla features and subterrean biomes below. Surface biomes above water for the player to build into. Biome mods supported.
+- **Waterworld** — Endless ocean at configurable sea level, default Y=101. Soft-faded vanilla seabed (~Y23–83), with vanilla features and subterranean biomes below. Surface biomes in the air column (dipping a few blocks into the water for clean tint); ocean biomes below. Biome mods supported.
 - **Boat AI** — Sentient mobs (pillagers, vindicators, evokers, witches, villagers, wandering traders) can pilot and exit boats/rafts. Sentient mobs might also open doors, whoopsie.
 - **Wandering trader rafts** — Traders spawn in bamboo rafts with stacked llama passengers.
 - **Ocean pillager patrols** — Pillager patrols spawn in bamboo rafts on the water.
 - **Raid mobs in rafts** — Raiders spawn in bamboo rafts over water, ravagers in back seats with jockeys.
-- **Armored illagers** — Illagers spawn with armor during patrols, raids, and outposts. Chance and tier ramp with world age and game difficulty.
 - **Wild guardians** — Guardians spawn naturally in ocean biomes at low frequency.
 - **Drowned guardian riders** — Wild guardians can spawn with mounted drowned (trident chance).
 - **Drowned on land** — Drowned will chase/roam onto land.
@@ -33,7 +32,7 @@ All features are individually toggleable via `config/waterworld.properties` (or 
 For dedicated servers, set in `server.properties`:
 
 ```properties
-level-type=project-waterworld:waterworld
+level-type=waterworld:waterworld
 ```
 
 
@@ -51,10 +50,18 @@ Config file: `config/waterworld.properties` (created on first launch). Most togg
 
 | Key | Default | Effect |
 |-----|---------|--------|
-| `spawn_ocean_biome` | *(empty)* | Force spawn in a specific ocean biome (`warm_ocean`, `lukewarm_ocean`, `deep_ocean`, etc.). Empty = disabled |
-| `spawn_island` | `false` | Generate a small island at world spawn |
-| `spawn_gear` | `true` | Give players a bamboo chest raft with starter items on first spawn |
-| `sea_level` | `101` | Ocean waterline for ships/biomes. For new worlds, keep `data/project-waterworld/worldgen/noise_settings/waterworld.json` `sea_level` equal to this value |
+| `spawn_island` | `false` | Easy mode: generate a small island at world spawn (and at each Spawn Party origin when that mod is present) |
+| `spawn_gear` | `true` | Give players a bamboo chest raft with starter items on first spawn (island not required) |
+| `spawn_gear_items` | `minecraft:bamboo,minecraft:fishing_rod` | Comma-separated item ids for the raft chest; optional `:count` (default 1). Empty = empty chest |
+| `sea_level` | `101` | Ocean waterline for ships/biomes. For new worlds, keep `data/waterworld/worldgen/noise_settings/waterworld.json` `sea_level` equal to this value |
+
+**Spawn Party (optional):** Waterworld does **not** depend on Spawn Party. Alone, gear still grants on JOIN for new players; `spawn_island` builds one island at **world spawn**.
+
+With Spawn Party loaded:
+- World-spawn island is **skipped**; islands are generated **once per party** at that party’s origin when the first member is placed
+- Each player still gets spawn gear (raft) on their first-origin placement if `spawn_gear` is on
+- Soft `suggests` only — Spawn Party calls into Waterworld after placement
+
 
 ### Guardians & Drowned
 
@@ -80,7 +87,7 @@ Config file: `config/waterworld.properties` (created on first launch). Most togg
 
 | Key | Default | Effect |
 |-----|---------|--------|
-| `turtle_ocean_spawns` | `true` | Turtles spawn in biomes tagged `#project-waterworld:turtle_spawns` |
+| `turtle_ocean_spawns` | `true` | Turtles spawn in biomes tagged `#waterworld:turtle_spawns` |
 | `turtle_spawn_weight` | `5` | Spawn weight for ocean turtles (**restart**) |
 
 ### Illagers & Patrols
@@ -88,11 +95,8 @@ Config file: `config/waterworld.properties` (created on first launch). Most togg
 | Key | Default | Effect |
 |-----|---------|--------|
 | `ocean_pillager_patrols` | `true` | Pillager patrols and raids spawn in boats on water |
-| `patrol_min_days` | `5` | Days before pillager patrols begin (also starts armor ramp) |
-| `patrol_full_strength_days` | `24` | Day patrol frequency and armor reach full strength |
-| `pillager_armor` | `true` | Illagers spawn with armor during patrols, raids, and outposts |
-| `pillager_armor_chance` | `0.3` | Base chance per armor piece (0.0–1.0); scaled by difficulty and world age |
-| `armor_scales_with_difficulty` | `true` | Armor chance/tier scales with game difficulty and ramps with world age |
+| `patrol_min_days` | `5` | Days before pillager patrols begin |
+| `patrol_full_strength_days` | `24` | Day patrol frequency reaches full strength |
 
 ### Wandering Traders
 

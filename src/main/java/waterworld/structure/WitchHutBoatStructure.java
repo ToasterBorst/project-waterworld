@@ -8,7 +8,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
-import waterworld.ProjectWaterworld;
+import waterworld.WaterworldMod;
 import waterworld.WaterworldConstants;
 
 import java.util.Optional;
@@ -21,7 +21,7 @@ public class WitchHutBoatStructure extends Structure {
 
 	public static final MapCodec<WitchHutBoatStructure> CODEC = simpleCodec(WitchHutBoatStructure::new);
 	static final Identifier TEMPLATE = Identifier.fromNamespaceAndPath(
-			ProjectWaterworld.MOD_ID, "witch_hut_boat");
+			WaterworldMod.MOD_ID, "witch_hut_boat");
 	/** Template local Y 0–3 are ocean water; deck begins at local Y 4. */
 	private static final int SUBMERGED_BLOCKS = 4;
 
@@ -49,7 +49,7 @@ public class WitchHutBoatStructure extends Structure {
 				context.structureTemplateManager(), TEMPLATE, pos, context.random());
 		builder.addPiece(piece);
 
-		ProjectWaterworld.LOGGER.debug("WitchHutBoat piece at {} boundingBox={} spawnZone={}",
+		WaterworldMod.LOGGER.debug("WitchHutBoat piece at {} boundingBox={} spawnZone={}",
 				pos, piece.getBoundingBox(), piece.getSpawnZone());
 	}
 

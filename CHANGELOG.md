@@ -2,10 +2,39 @@
 
 ## Unreleased
 
+### Added
+- Soft Spawn Party bridge (`suggests` only, no hard dependency): defer JOIN spawn gear until party origin placement; grant raft/gear at origin; optional per-origin island when `spawn_island`
+- Persistent per-world spawn-gear recipients (`data/waterworld_spawn_gear.json`)
+
+### Fixed
+- Spawn Party bridge: placement driven by Spawn Party calling `SpawnPartyOriginHook` (no fragile Proxy event register)
+- With Spawn Party loaded: skip world-spawn island; one island per party id; gear per player on first-origin placement
+- Fail-closed JOIN defer when Spawn Party API unbound; never mark gear-received from PLAY_TIME alone while Spawn Party is present
+
+### Changed
+- Jar version string includes loader: `waterworld-26.2-fabric-<mod_version>.jar`
+- Reverted custom explorer-map outline mixin (restore vanilla treasure map painting, including the red X)
+- Configurable spawn raft chest contents via `spawn_gear_items` (default bamboo + fishing rod)
+- Bonus chest settles on ocean floor (`OCEAN_FLOOR`) in Waterworld instead of the water surface
+- Surface biomes dip ~4 blocks below sea level (`BIOME_FUZZ_BUFFER`) so boat tint / F3 stay on air-column biomes without a splotchy waterline boundary
+- Reverted height compression; restored soft-fade vanilla seabed topography (Y23→83) with `overworld/sloped_cheese` (new worlds only; existing chunks unchanged)
+- Desert pyramids / jungle temples: bypass `SinglePieceStructure` dry-land sea-level gate so they can generate (and `/locate`) on the flooded seabed
+- Trail ruins project to `OCEAN_FLOOR_WG` (was water-surface heightmap)
+- Flood seabed temples/ruins properly: desert pyramid `afterPlace` override now flooded; waterlog waterloggable blocks; include trail ruins; fill cave/void air
+
+### Breaking — mod namespace
+- Registry / datapack namespace renamed from `project-waterworld` to `waterworld` (mod id, world preset, biome source, structures, tags, assets)
+- Dedicated servers: use `level-type=waterworld:waterworld`
+- Existing worlds that stored `project-waterworld:*` ids need a new world (or manual save migration); config still migrates from legacy `project-waterworld.properties` / `.json`
+
+### Gameplay cleanup
+- Removed `spawn_ocean_biome` spawn override (use supplemental mods for biome-specific spawn); kept `spawn_island` and `spawn_gear`
+- Removed illager armor equipment (vanilla illager models do not render armor for unmodded clients)
+
 ### Beta readiness
 - Worldgen mixins (seabed settle, pyramid/temple flood, monument terrain) gate on `WaterworldBiomeSource`, not gameplay `isActive()`
 - Removed no-op builtin resource-pack registration (datapack remains mod-root `data/`)
-- Spawn override path places vanilla bonus chest when enabled; invalid `spawn_ocean_biome` no longer crashes
+- Spawn island path places vanilla bonus chest when enabled
 - Config: sanitize day ranges/chances; do not rewrite properties on every load; complete legacy JSON day-field migration
 - Boat AI: every-tick only while aboard / mounting; use `getNearestPlayer` and squared-distance checks
 - `docs/` is local-only (gitignored); author metadata cleaned
@@ -38,7 +67,6 @@
 - Wild guardians spawn naturally in ocean biomes
 - Drowned can spawn mounted on wild guardians (with trident chance)
 - Drowned roam onto land instead of retreating to water
-- Illagers spawn with difficulty-scaled armor during patrols and raids
 - Pillager patrols spawn in bamboo rafts on the water (2 per raft)
 - Raid mobs spawn in bamboo rafts; ravagers ride as passengers with a jockey pilot
 - Wandering traders spawn in bamboo rafts with one llama passenger

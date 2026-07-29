@@ -31,7 +31,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.loot.LootTable;
-import waterworld.ProjectWaterworld;
+import waterworld.WaterworldMod;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class WitchHutBoatPiece extends TemplateStructurePiece implements SpawnZo
 
 	private static final ResourceKey<LootTable> LOOT_TABLE = ResourceKey.create(
 			Registries.LOOT_TABLE,
-			Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "chests/witch_hut_boat"));
+			Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "chests/witch_hut_boat"));
 
 	/** Local crafting-table position (cabin floor). */
 	private static final BlockPos CABIN_ANCHOR_LOCAL = new BlockPos(4, 5, 18);
@@ -214,7 +214,7 @@ public class WitchHutBoatPiece extends TemplateStructurePiece implements SpawnZo
 					serverLevel.addFreshEntityWithPassengers(witch);
 				}
 			} catch (Exception e) {
-				ProjectWaterworld.LOGGER.warn("Failed to spawn witch hut witch: {}", e.getMessage());
+				WaterworldMod.LOGGER.warn("Failed to spawn witch hut witch: {}", e.getMessage());
 			}
 		}
 

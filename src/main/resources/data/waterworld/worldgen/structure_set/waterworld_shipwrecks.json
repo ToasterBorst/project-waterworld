@@ -7,7 +7,7 @@
   },
   "structures": [
     {
-      "structure": "project-waterworld:waterworld_shipwreck",
+      "structure": "waterworld:waterworld_shipwreck",
       "weight": 1
     }
   ]

@@ -37,7 +37,7 @@ public class WaterworldConfigScreen extends Screen {
 	private ConfigOptionsList optionList;
 
 	public WaterworldConfigScreen(Screen parent) {
-		super(Component.translatable("config.project-waterworld.title"));
+		super(Component.translatable("config.waterworld.title"));
 		this.parent = parent;
 	}
 
@@ -53,24 +53,24 @@ public class WaterworldConfigScreen extends Screen {
 		optionList = new ConfigOptionsList(this.minecraft, this.width - 40, listHeight, LIST_TOP, ROW_HEIGHT);
 		optionList.setX(20);
 
-		addSectionKey("config.project-waterworld.section.activation");
+		addSectionKey("config.waterworld.section.activation");
 		addActivationModeOption();
 
-		addSectionKey("config.project-waterworld.section.player_spawn");
-		addStringOption("Spawn Ocean Biome", config.spawnOceanBiome, "warm_ocean",
-				"Force spawn in a specific ocean biome. Leave empty to disable. Examples: warm_ocean, lukewarm_ocean, deep_ocean",
-				v -> config.spawnOceanBiome = v);
+		addSectionKey("config.waterworld.section.player_spawn");
 		addBoolOption("Spawn Island", config.spawnIsland,
 				"Generate a small island at world spawn.",
 				v -> config.spawnIsland = v);
 		addBoolOption("Spawn Gear", config.spawnGear,
 				"Give players a bamboo chest raft with starter items on first spawn.",
 				v -> config.spawnGear = v);
+		addStringOption("Spawn Gear Items", config.spawnGearItems, "minecraft:bamboo,minecraft:fishing_rod",
+				"Comma-separated item ids for the raft chest; optional :count. Empty = empty chest.",
+				v -> config.spawnGearItems = v);
 		addIntOption("Sea Level", config.seaLevel,
 				"Ocean waterline for ships and biomes (default 101). New worlds need matching noise_settings sea_level.",
 				v -> config.seaLevel = v);
 
-		addSectionKey("config.project-waterworld.section.guardians");
+		addSectionKey("config.waterworld.section.guardians");
 		addBoolOption("Wild Guardian Spawns", config.wildGuardianSpawns,
 				"Guardians can spawn in open ocean water outside monuments.",
 				v -> config.wildGuardianSpawns = v);
@@ -117,15 +117,15 @@ public class WaterworldConfigScreen extends Screen {
 				"Energy budget paired with drowned spawn charge (vanilla-style 0.7). Restart required.",
 				v -> config.drownedSpawnEnergyBudget = v);
 
-		addSectionKey("config.project-waterworld.section.turtles");
+		addSectionKey("config.waterworld.section.turtles");
 		addBoolOption("Turtle Ocean Spawns", config.turtleOceanSpawns,
-				"Turtles spawn naturally in biomes tagged #project-waterworld:turtle_spawns.",
+				"Turtles spawn naturally in biomes tagged #waterworld:turtle_spawns.",
 				v -> config.turtleOceanSpawns = v);
 		addIntOption("Turtle Spawn Weight", config.turtleSpawnWeight,
 				"Spawn weight for ocean turtles.",
 				v -> config.turtleSpawnWeight = v);
 
-		addSectionKey("config.project-waterworld.section.illagers");
+		addSectionKey("config.waterworld.section.illagers");
 		addBoolOption("Ocean Pillager Patrols", config.oceanPillagerPatrols,
 				"Pillager patrols and raids spawn in boats on water.",
 				v -> config.oceanPillagerPatrols = v);
@@ -135,17 +135,8 @@ public class WaterworldConfigScreen extends Screen {
 		addIntOption("Patrol Full Strength Days", config.patrolFullStrengthDays,
 				"Day patrol frequency reaches full rate.",
 				v -> config.patrolFullStrengthDays = v);
-		addBoolOption("Pillager Armor", config.pillagerArmor,
-				"Illagers spawn with armor during patrols and raids.",
-				v -> config.pillagerArmor = v);
-		addDoubleOption("Pillager Armor Chance", config.pillagerArmorChance,
-				"Base chance per armor piece for illagers (0.0-1.0).",
-				v -> config.pillagerArmorChance = v);
-		addBoolOption("Armor Scales With Difficulty", config.armorScalesWithDifficulty,
-				"Armor chance/tier scales with game difficulty and ramps with world age (patrol day range).",
-				v -> config.armorScalesWithDifficulty = v);
 
-		addSectionKey("config.project-waterworld.section.traders");
+		addSectionKey("config.waterworld.section.traders");
 		addBoolOption("Wandering Trader Boats", config.wanderingTraderBoats,
 				"Wandering traders spawn in boats at sea with one llama.",
 				v -> config.wanderingTraderBoats = v);
@@ -156,7 +147,7 @@ public class WaterworldConfigScreen extends Screen {
 				"Day wandering trader frequency reaches full rate.",
 				v -> config.wanderingTraderFullStrengthDays = v);
 
-		addSectionKey("config.project-waterworld.section.boats");
+		addSectionKey("config.waterworld.section.boats");
 		addBoolOption("Mobs Can Exit Boats", config.mobsCanExitBoats,
 				"Intelligent mobs can exit boats when they reach land.",
 				v -> config.mobsCanExitBoats = v);
@@ -218,20 +209,20 @@ public class WaterworldConfigScreen extends Screen {
 		String initial = WaterworldConfig.normalizeActivationMode(config.activationMode);
 		CycleButton<String> button = CycleButton.<String>builder(this::activationLabel, initial)
 				.withValues(ACTIVATION_MODES)
-				.create(0, 0, 120, 20, Component.translatable("config.project-waterworld.option.activation_mode"),
+				.create(0, 0, 120, 20, Component.translatable("config.waterworld.option.activation_mode"),
 						(btn, val) -> {});
 		tooltips.put(button, Component.literal(
 				"Auto = only in Waterworld worlds. Always = all worlds. Never = disabled (worldgen only)."));
 		appliers.add(() -> config.activationMode = button.getValue());
 		optionList.add(optionList.createOption(
-				Component.translatable("config.project-waterworld.option.activation_mode"), button).asEntry());
+				Component.translatable("config.waterworld.option.activation_mode"), button).asEntry());
 	}
 
 	private Component activationLabel(String mode) {
 		return switch (mode) {
-			case "always" -> Component.translatable("config.project-waterworld.activation.always");
-			case "never" -> Component.translatable("config.project-waterworld.activation.never");
-			default -> Component.translatable("config.project-waterworld.activation.auto");
+			case "always" -> Component.translatable("config.waterworld.activation.always");
+			case "never" -> Component.translatable("config.waterworld.activation.never");
+			default -> Component.translatable("config.waterworld.activation.auto");
 		};
 	}
 
@@ -273,8 +264,8 @@ public class WaterworldConfigScreen extends Screen {
 
 	private void addStringOption(String label, String value, String hint, String tooltip, StringConsumer setter) {
 		EditBox box = new EditBox(this.font, 0, 0, 120, 20, Component.literal(label));
-		box.setValue(value);
-		box.setMaxLength(256);
+		box.setValue(value != null ? value : "");
+		box.setMaxLength(512);
 		box.setHint(Component.literal(hint));
 		tooltips.put(box, Component.literal(tooltip));
 		appliers.add(() -> setter.accept(box.getValue().trim()));

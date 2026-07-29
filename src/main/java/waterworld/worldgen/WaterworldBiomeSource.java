@@ -25,13 +25,16 @@ import waterworld.WaterworldConstants;
  * clamped continentalness) only when the layer demands it:
  *
  * <ul>
- *   <li><b>Surface layer</b> (block Y &gt;= sea level - fuzz): land, coast,
- *       river, and mushroom-field biomes are kept exactly where the vanilla
- *       seed places them; only ocean-tagged biomes are replaced with a
- *       climate-matched inland biome.</li>
- *   <li><b>Underwater layer</b>: ocean biomes are kept; vanilla land and
- *       mid-depth cave biomes are replaced with a climate-matched non-deep
- *       ocean. True underground cave biomes are kept only below Y=0.</li>
+ *   <li><b>Surface layer</b> (from a few blocks below sea level upward): land,
+ *       coast, river, and mushroom-field biomes are kept exactly where the
+ *       vanilla seed places them; only ocean-tagged biomes are replaced with a
+ *       climate-matched inland biome. Dipping slightly into the water column
+ *       keeps boat-height tint/F3 on surface biomes without a splotchy
+ *       single-quart boundary at the waterline.</li>
+ *   <li><b>Underwater layer</b> (deeper than that dip): ocean biomes are kept;
+ *       vanilla land and mid-depth cave biomes are replaced with a
+ *       climate-matched non-deep ocean. True underground cave biomes are kept
+ *       only below Y=0.</li>
  * </ul>
  *
  * <p>Classification is tag-driven (vanilla {@code minecraft:is_ocean} plus the
@@ -62,9 +65,9 @@ public class WaterworldBiomeSource extends BiomeSource {
 	private static final long OCEAN_BAND_MAX_CONTINENTALNESS = Climate.quantizeCoord(-0.2f);
 
 	/**
-	 * Biome noise is fuzzed by up to a quart; treating the top water quart as
-	 * part of the surface layer guarantees the water at and just below sea
-	 * level renders with the surface biome's water color, fog, and sky.
+	 * Biome noise is fuzzed by up to a quart; treating the top few water
+	 * blocks as surface keeps boat-height water tint/F3 on air-column biomes
+	 * and moves the ocean/surface boundary below the visible waterline.
 	 */
 	private static final int BIOME_FUZZ_BUFFER = 4;
 
@@ -96,6 +99,8 @@ public class WaterworldBiomeSource extends BiomeSource {
 		Holder<Biome> biome = this.overworld.getNoiseBiome(quartX, quartY, quartZ, sampler);
 		int blockY = quartToBlockY(quartY);
 
+		// Surface dips BIOME_FUZZ_BUFFER blocks into the ocean so the messy
+		// quart/voronoi boundary sits below boat height / waterline tint.
 		if (blockY >= WaterworldConstants.seaLevel() - BIOME_FUZZ_BUFFER) {
 			if (!isOcean(biome)) {
 				return biome;

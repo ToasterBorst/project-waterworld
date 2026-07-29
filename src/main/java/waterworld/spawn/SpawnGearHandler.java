@@ -9,11 +9,13 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.vehicle.boat.AbstractChestBoat;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import waterworld.ProjectWaterworld;
+import waterworld.WaterworldMod;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldConstants;
 import waterworld.WaterworldDetection;
+import waterworld.compat.SpawnPartyBridge;
+
+import java.util.List;
 
 public final class SpawnGearHandler {
 	private SpawnGearHandler() {
@@ -25,18 +27,32 @@ public final class SpawnGearHandler {
 			if (!WaterworldConfig.INSTANCE.spawnGear) return;
 
 			ServerPlayer player = handler.getPlayer();
-			if (player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME)) > 0) return;
+			if (SpawnGearTracker.hasReceived(player.getUUID())) return;
+			if (SpawnPartyBridge.shouldDeferJoinGear(player.getUUID())) {
+				WaterworldMod.LOGGER.info("Deferring spawn gear for {} until Spawn Party origin placement",
+						player.getName().getString());
+				return;
+			}
+			// Only without Spawn Party: legacy players with play time skip re-grant.
+			if (!SpawnPartyBridge.isSpawnPartyPresent()
+					&& player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME)) > 0) {
+				SpawnGearTracker.markReceived(player.getUUID());
+				return;
+			}
 
-			server.execute(() -> giveSpawnGear(player));
+			server.execute(() -> giveSpawnGearAt(player, player.blockPosition()));
 		});
 	}
 
-	private static void giveSpawnGear(ServerPlayer player) {
-		ServerLevel level = player.level();
+	/** Public entry for Spawn Party placement (and JOIN when not deferred). */
+	public static void giveSpawnGearAt(ServerPlayer player, BlockPos near) {
+		if (!WaterworldConfig.INSTANCE.spawnGear) return;
+		if (SpawnGearTracker.hasReceived(player.getUUID())) return;
 
-		BlockPos waterPos = BoatSpawnHelper.findWaterSurface(level, player.blockPosition(), 15);
+		ServerLevel level = player.level();
+		BlockPos waterPos = BoatSpawnHelper.findWaterSurface(level, near, 15);
 		if (waterPos == null) {
-			waterPos = new BlockPos(player.getBlockX(), WaterworldConstants.seaLevel(), player.getBlockZ());
+			waterPos = new BlockPos(near.getX(), WaterworldConstants.seaLevel(), near.getZ());
 		}
 
 		double x = waterPos.getX() + 0.5;
@@ -45,21 +61,26 @@ public final class SpawnGearHandler {
 
 		AbstractChestBoat raft = (AbstractChestBoat) EntityTypes.BAMBOO_CHEST_RAFT.create(level, EntitySpawnReason.MOB_SUMMONED);
 		if (raft == null) {
-			ProjectWaterworld.LOGGER.warn("Failed to create bamboo chest raft for spawn gear");
+			WaterworldMod.LOGGER.warn("Failed to create bamboo chest raft for spawn gear");
 			return;
 		}
 
 		raft.setPos(x, y, z);
 		raft.setYRot(level.getRandom().nextFloat() * 360.0f);
 
-		raft.setItem(0, new ItemStack(Items.BAMBOO));
-		raft.setItem(1, new ItemStack(Items.FISHING_ROD));
+		List<ItemStack> gear = WaterworldConfig.INSTANCE.createSpawnGearStacks();
+		int slots = raft.getContainerSize();
+		for (int i = 0; i < gear.size() && i < slots; i++) {
+			raft.setItem(i, gear.get(i));
+		}
 
 		level.addFreshEntity(raft);
 
 		player.teleportTo(level, x, y, z, java.util.Set.of(), player.getYRot(), player.getXRot(), false);
 		player.startRiding(raft);
 
-		ProjectWaterworld.LOGGER.info("Gave spawn gear to {}", player.getName().getString());
+		SpawnGearTracker.markReceived(player.getUUID());
+		WaterworldMod.LOGGER.info("Gave spawn gear to {} near {},{},{}",
+				player.getName().getString(), waterPos.getX(), waterPos.getY(), waterPos.getZ());
 	}
 }

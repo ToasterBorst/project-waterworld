@@ -1,5 +1,5 @@
 {
-  "type": "project-waterworld:witch_hut_boat",
+  "type": "waterworld:witch_hut_boat",
   "biomes": "#minecraft:has_structure/swamp_hut",
   "spawn_overrides": {
     "monster": {

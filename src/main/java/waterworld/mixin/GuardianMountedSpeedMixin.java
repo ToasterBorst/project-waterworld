@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import waterworld.ProjectWaterworld;
+import waterworld.WaterworldMod;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldDetection;
 
@@ -24,7 +24,7 @@ import waterworld.WaterworldDetection;
 public abstract class GuardianMountedSpeedMixin {
 	@Unique
 	private static final Identifier MOUNTED_SPEED_ID =
-			Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "mounted_drowned_slow");
+			Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "mounted_drowned_slow");
 
 	@Inject(method = "aiStep", at = @At("HEAD"))
 	private void waterworld$syncMountedSpeed(CallbackInfo ci) {

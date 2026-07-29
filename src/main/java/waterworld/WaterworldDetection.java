@@ -39,7 +39,7 @@ public final class WaterworldDetection {
 			default -> detectWaterworldOverworld(server);
 		};
 
-		ProjectWaterworld.LOGGER.info("Waterworld activation: mode={}, active={}",
+		WaterworldMod.LOGGER.info("Waterworld activation: mode={}, active={}",
 				mode, activeForCurrentServer);
 	}
 

@@ -1,0 +1,17 @@
+{
+	"generator.waterworld.waterworld": "Waterworld",
+	"modmenu.summaryTranslation.waterworld": "Inspired by Skyblock, except you're Kevin Costner. The world is water.",
+	"modmenu.descriptionTranslation.waterworld": "Inspired by Skyblock, except you're Kevin Costner. Waterworld. Get it? The world is water. Flooded. Higher sea level, natural seabed, vanilla (mods supported) biome distribution in the air column for all your building and farming needs. Lots of little tweaks for difficulty and fun, like wandering traders and pillager patrols on boats! Server-side, clients do not need it installed to join.",
+	"config.waterworld.title": "Waterworld Configuration",
+  "config.waterworld.section.activation": "Activation",
+  "config.waterworld.section.player_spawn": "Player Spawn",
+  "config.waterworld.section.guardians": "Guardians & Drowned",
+  "config.waterworld.section.turtles": "Turtles",
+  "config.waterworld.section.illagers": "Pillagers & Patrols",
+  "config.waterworld.section.traders": "Wandering Traders",
+  "config.waterworld.section.boats": "Boat Behavior",
+  "config.waterworld.option.activation_mode": "Activation Mode",
+  "config.waterworld.activation.auto": "Auto",
+  "config.waterworld.activation.always": "Always",
+  "config.waterworld.activation.never": "Never"
+}

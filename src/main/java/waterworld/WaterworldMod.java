@@ -11,8 +11,8 @@ import waterworld.worldgen.WaterworldBiomeSources;
 
 import java.nio.file.Path;
 
-public class ProjectWaterworld implements ModInitializer {
-	public static final String MOD_ID = "project-waterworld";
+public class WaterworldMod implements ModInitializer {
+	public static final String MOD_ID = "waterworld";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	@Override
@@ -31,8 +31,18 @@ public class ProjectWaterworld implements ModInitializer {
 		WaterworldBiomeSources.register();
 		WaterworldStructures.register();
 		WaterworldSpawns.register();
+		waterworld.compat.SpawnPartyBridge.register();
 
-		ServerLifecycleEvents.SERVER_STARTED.register(WaterworldDetection::onServerStarted);
-		ServerLifecycleEvents.SERVER_STOPPED.register(WaterworldDetection::onServerStopped);
+		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+			WaterworldDetection.onServerStarted(server);
+			waterworld.spawn.SpawnGearTracker.onServerStarted(server);
+			waterworld.spawn.PartyIslandTracker.onServerStarted(server);
+			waterworld.compat.SpawnPartyBridge.register();
+		});
+		ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+			waterworld.spawn.PartyIslandTracker.onServerStopped(server);
+			waterworld.spawn.SpawnGearTracker.onServerStopped(server);
+			WaterworldDetection.onServerStopped(server);
+		});
 	}
 }

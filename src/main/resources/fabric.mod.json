@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "project-waterworld",
+	"id": "waterworld",
 	"version": "${version}",
 	"name": "Waterworld",
 	"description": "Inspired by Skyblock, except you're Kevin Costner. Waterworld. Get it? The world is water. Flooded. Higher sea level, natural seabed, vanilla (mods supported) biome distribution in the air column for all your building and farming needs. Lots of little tweaks for difficulty and fun, like wandering traders and pillager patrols on boats!",
@@ -9,7 +9,7 @@
 	],
 	"contributors": [
 	],
-	"icon": "assets/project-waterworld/icon.png",
+	"icon": "assets/waterworld/icon.png",
 	"contact": {
 		"homepage": "https://github.com/ToasterBorst/project-waterworld",
 		"sources": "https://github.com/ToasterBorst/project-waterworld",
@@ -19,15 +19,15 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"waterworld.ProjectWaterworld"
+			"waterworld.WaterworldMod"
 		],
 		"modmenu": [
 			"waterworld.client.WaterworldModMenu"
 		]
 	},
-	"accessWidener": "project-waterworld.accesswidener",
+	"accessWidener": "waterworld.accesswidener",
 	"mixins": [
-		"project-waterworld.mixins.json"
+		"waterworld.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.19.3",
@@ -36,6 +36,7 @@
 		"fabric-api": ">=0.153.0"
 	},
 	"suggests": {
-		"modmenu": "*"
+		"modmenu": "*",
+		"spawnparty": "*"
 	}
 }

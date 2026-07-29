@@ -9,7 +9,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
-import waterworld.ProjectWaterworld;
+import waterworld.WaterworldMod;
 import waterworld.WaterworldConstants;
 
 import java.util.Optional;
@@ -26,9 +26,9 @@ public class PillagerOutpostShipStructure extends Structure {
 			simpleCodec(PillagerOutpostShipStructure::new);
 
 	static final Identifier[] TEMPLATES = {
-			Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "pillager_outpost_ship_basic"),
-			Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "pillager_outpost_ship_allay"),
-			Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "pillager_outpost_ship_golem")
+			Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "pillager_outpost_ship_basic"),
+			Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "pillager_outpost_ship_allay"),
+			Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "pillager_outpost_ship_golem")
 	};
 
 	/** Template local Y 0–7 are ocean water; deck begins at local Y 8. */
@@ -61,7 +61,7 @@ public class PillagerOutpostShipStructure extends Structure {
 				context.structureTemplateManager(), template, pos, random);
 		builder.addPiece(piece);
 
-		ProjectWaterworld.LOGGER.debug("PillagerOutpostShip {} at {} boundingBox={}",
+		WaterworldMod.LOGGER.debug("PillagerOutpostShip {} at {} boundingBox={}",
 				template, pos, piece.getBoundingBox());
 	}
 

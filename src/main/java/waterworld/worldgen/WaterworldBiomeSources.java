@@ -3,7 +3,7 @@ package waterworld.worldgen;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import waterworld.ProjectWaterworld;
+import waterworld.WaterworldMod;
 
 public final class WaterworldBiomeSources {
 	private WaterworldBiomeSources() {
@@ -12,9 +12,9 @@ public final class WaterworldBiomeSources {
 	public static void register() {
 		Registry.register(
 			BuiltInRegistries.BIOME_SOURCE,
-			Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "waterworld"),
+			Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "waterworld"),
 			WaterworldBiomeSource.CODEC
 		);
-		ProjectWaterworld.LOGGER.info("Registered Waterworld biome source");
+		WaterworldMod.LOGGER.info("Registered Waterworld biome source");
 	}
 }

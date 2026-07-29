@@ -18,7 +18,7 @@ import waterworld.WaterworldDetection;
 import waterworld.worldgen.WaterworldBiomeTags;
 
 /**
- * Allows turtles to spawn on underwater sand in biomes tagged #project-waterworld:turtle_spawns.
+ * Allows turtles to spawn on underwater sand in biomes tagged #waterworld:turtle_spawns.
  */
 @Mixin(Turtle.class)
 public class TurtleSpawnMixin {

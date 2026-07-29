@@ -1,5 +1,5 @@
 {
-  "type": "project-waterworld:pillager_outpost_ship",
+  "type": "waterworld:pillager_outpost_ship",
   "biomes": "#minecraft:has_structure/pillager_outpost",
   "spawn_overrides": {
     "monster": {

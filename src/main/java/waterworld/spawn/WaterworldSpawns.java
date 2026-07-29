@@ -17,7 +17,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.pathfinder.PathType;
-import waterworld.ProjectWaterworld;
+import waterworld.WaterworldMod;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldDetection;
 import waterworld.worldgen.WaterworldBiomeTags;
@@ -32,7 +32,7 @@ public final class WaterworldSpawns {
 		registerDrownedSpawnCost();
 		registerEntityLoadEvents();
 		SpawnGearHandler.register();
-		ProjectWaterworld.LOGGER.info("Registered Waterworld spawn modifications");
+		WaterworldMod.LOGGER.info("Registered Waterworld spawn modifications");
 	}
 
 	private static void registerGuardianSpawns() {
@@ -72,32 +72,30 @@ public final class WaterworldSpawns {
 		double charge = config.drownedSpawnCharge;
 		double budget = config.drownedSpawnEnergyBudget;
 
-		BiomeModifications.create(Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, "drowned_spawn_cost"))
+		BiomeModifications.create(Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, "drowned_spawn_cost"))
 				.add(ModificationPhase.ADDITIONS, BiomeSelectors.tag(BiomeTags.IS_OCEAN), context ->
 						context.getMobSpawnSettings().addMobCharge(EntityTypes.DROWNED, charge, budget));
 
-		ProjectWaterworld.LOGGER.info(
+		WaterworldMod.LOGGER.info(
 				"Registered ocean drowned MobSpawnCost charge={} energyBudget={}", charge, budget);
 	}
 
 	private static void registerEntityLoadEvents() {
 		ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
-			if (!(level instanceof ServerLevel serverLevel)) return;
+			if (!(level instanceof ServerLevel)) return;
 			if (!WaterworldDetection.isActive()) return;
 			if (!(entity instanceof Mob mob)) return;
 
 			if (!WaterworldMobTypes.canDismountBoats(mob)
 					&& !WaterworldMobTypes.canPilotBoats(mob)
 					&& !WaterworldMobTypes.shouldOpenDoors(mob)
-					&& !WaterworldMobTypes.isHostileBoatPilot(mob)
-					&& !MobEquipmentHelper.shouldEquipArmor(mob)) {
+					&& !WaterworldMobTypes.isHostileBoatPilot(mob)) {
 				return;
 			}
 
 			injectBoatGoals(mob);
 			injectDoorGoals(mob);
 			injectWaterAvoidance(mob);
-			MobEquipmentHelper.tryEquipArmorOnLoad(mob, serverLevel);
 		});
 	}
 

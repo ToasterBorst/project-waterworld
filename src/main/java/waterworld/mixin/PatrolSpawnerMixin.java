@@ -18,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldDetection;
 import waterworld.spawn.BoatSpawnHelper;
-import waterworld.spawn.MobEquipmentHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,9 +94,6 @@ public class PatrolSpawnerMixin {
 			pillager.setPatrolling(true);
 			pillager.finalizeSpawn(level, level.getCurrentDifficultyAt(memberPos),
 					EntitySpawnReason.PATROL, null);
-
-			MobEquipmentHelper.equipRandomArmor(pillager, level.getDifficulty(),
-					level.getRandom(), level.getGameTime());
 
 			level.addFreshEntity(pillager);
 			spawned.add(pillager);

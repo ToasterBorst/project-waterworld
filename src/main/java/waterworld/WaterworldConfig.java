@@ -1,10 +1,16 @@
 package waterworld;
 
 import com.google.gson.Gson;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -21,16 +27,16 @@ public final class WaterworldConfig {
 	public boolean wildGuardianSpawns = true;
 	public boolean drownedRideGuardians = true;
 	public boolean drownedCanGoOnLand = true;
-	public boolean pillagerArmor = true;
 	public boolean mobsCanExitBoats = true;
 	public boolean mobsCanPilotBoats = true;
 	public boolean wanderingTraderBoats = true;
 	public boolean oceanPillagerPatrols = true;
 	public boolean turtleOceanSpawns = true;
 
-	public String spawnOceanBiome = "";
 	public boolean spawnIsland = false;
 	public boolean spawnGear = true;
+	/** Comma-separated item ids for the spawn raft chest; optional {@code :count}. */
+	public String spawnGearItems = "minecraft:bamboo,minecraft:fishing_rod";
 
 	/**
 	 * Ocean waterline for structures/biomes. Keep in sync with noise_settings
@@ -57,8 +63,6 @@ public final class WaterworldConfig {
 	/** Energy budget paired with {@link #drownedSpawnCharge} (vanilla spawn_costs). */
 	public double drownedSpawnEnergyBudget = 0.7;
 	public double tridentRiderChance = 0.20;
-	public double pillagerArmorChance = 0.3;
-	public boolean armorScalesWithDifficulty = true;
 
 	public int tridentDrownedMinDays = 10;
 	public int guardianMinDays = 5;
@@ -98,7 +102,7 @@ public final class WaterworldConfig {
 			if (migrated != null) {
 				migrated.save(configDir);
 				tryDelete(legacyProperties);
-				ProjectWaterworld.LOGGER.info("Migrated config from {} to {}", LEGACY_PROPERTIES_FILE_NAME, FILE_NAME);
+				WaterworldMod.LOGGER.info("Migrated config from {} to {}", LEGACY_PROPERTIES_FILE_NAME, FILE_NAME);
 				return migrated;
 			}
 		}
@@ -108,7 +112,7 @@ public final class WaterworldConfig {
 			if (migrated != null) {
 				migrated.save(configDir);
 				tryDelete(legacyJson);
-				ProjectWaterworld.LOGGER.info("Migrated config from {} to {}", LEGACY_JSON_FILE_NAME, FILE_NAME);
+				WaterworldMod.LOGGER.info("Migrated config from {} to {}", LEGACY_JSON_FILE_NAME, FILE_NAME);
 				return migrated;
 			}
 		}
@@ -135,7 +139,7 @@ public final class WaterworldConfig {
 			config.readProperties(props);
 			return config;
 		} catch (IOException e) {
-			ProjectWaterworld.LOGGER.error("Failed to read config {}, using defaults", file.getFileName(), e);
+			WaterworldMod.LOGGER.error("Failed to read config {}, using defaults", file.getFileName(), e);
 			return null;
 		}
 	}
@@ -152,13 +156,11 @@ public final class WaterworldConfig {
 			config.wildGuardianSpawns = legacy.wild_guardian_spawns;
 			config.drownedRideGuardians = legacy.drowned_ride_guardians;
 			config.drownedCanGoOnLand = legacy.drowned_can_go_on_land;
-			config.pillagerArmor = legacy.pillager_armor;
 			config.mobsCanExitBoats = legacy.mobs_can_exit_boats;
 			config.mobsCanPilotBoats = legacy.mobs_can_pilot_boats;
 			config.wanderingTraderBoats = legacy.wandering_trader_boats;
 			config.oceanPillagerPatrols = legacy.ocean_pillager_patrols;
 			config.turtleOceanSpawns = legacy.turtle_ocean_spawns;
-			config.spawnOceanBiome = legacy.spawn_ocean_biome != null ? legacy.spawn_ocean_biome : "";
 			config.spawnIsland = legacy.spawn_island;
 			config.spawnGear = legacy.spawn_gear;
 			config.guardianSpawnWeight = legacy.guardian_spawn_weight;
@@ -166,8 +168,6 @@ public final class WaterworldConfig {
 			config.guardianSpawnChance = legacy.guardian_spawn_chance;
 			config.drownedRiderChance = legacy.drowned_rider_chance;
 			config.tridentRiderChance = legacy.trident_rider_chance;
-			config.pillagerArmorChance = legacy.pillager_armor_chance;
-			config.armorScalesWithDifficulty = legacy.armor_scales_with_difficulty;
 			config.tridentDrownedMinDays = legacy.trident_drowned_min_days;
 			config.guardianMinDays = legacy.guardian_min_days;
 			config.guardianFullStrengthDays = legacy.guardian_full_strength_days;
@@ -180,7 +180,7 @@ public final class WaterworldConfig {
 			config.sanitize();
 			return config;
 		} catch (Exception e) {
-			ProjectWaterworld.LOGGER.warn("Failed to migrate legacy JSON config", e);
+			WaterworldMod.LOGGER.warn("Failed to migrate legacy JSON config", e);
 			return null;
 		}
 	}
@@ -190,16 +190,15 @@ public final class WaterworldConfig {
 		wildGuardianSpawns = getBool(props, "wild_guardian_spawns", wildGuardianSpawns);
 		drownedRideGuardians = getBool(props, "drowned_ride_guardians", drownedRideGuardians);
 		drownedCanGoOnLand = getBool(props, "drowned_can_go_on_land", drownedCanGoOnLand);
-		pillagerArmor = getBool(props, "pillager_armor", pillagerArmor);
 		mobsCanExitBoats = getBool(props, "mobs_can_exit_boats", mobsCanExitBoats);
 		mobsCanPilotBoats = getBool(props, "mobs_can_pilot_boats", mobsCanPilotBoats);
 		wanderingTraderBoats = getBool(props, "wandering_trader_boats", wanderingTraderBoats);
 		oceanPillagerPatrols = getBool(props, "ocean_pillager_patrols", oceanPillagerPatrols);
 		turtleOceanSpawns = getBool(props, "turtle_ocean_spawns", turtleOceanSpawns);
 
-		spawnOceanBiome = getString(props, "spawn_ocean_biome", spawnOceanBiome);
 		spawnIsland = getBool(props, "spawn_island", spawnIsland);
 		spawnGear = getBool(props, "spawn_gear", spawnGear);
+		spawnGearItems = getString(props, "spawn_gear_items", spawnGearItems);
 		seaLevel = getInt(props, "sea_level", seaLevel);
 
 		guardianSpawnWeight = getInt(props, "guardian_spawn_weight", guardianSpawnWeight);
@@ -216,8 +215,6 @@ public final class WaterworldConfig {
 			drownedSpawnEnergyBudget = 0.7;
 		}
 		tridentRiderChance = getDouble(props, "trident_rider_chance", tridentRiderChance);
-		pillagerArmorChance = getDouble(props, "pillager_armor_chance", pillagerArmorChance);
-		armorScalesWithDifficulty = getBool(props, "armor_scales_with_difficulty", armorScalesWithDifficulty);
 
 		tridentDrownedMinDays = getInt(props, "trident_drowned_min_days", tridentDrownedMinDays);
 		guardianMinDays = getInt(props, "guardian_min_days", guardianMinDays);
@@ -234,7 +231,7 @@ public final class WaterworldConfig {
 	/** Clamps chances and day ranges so runtime math stays safe. */
 	public void sanitize() {
 		activationMode = normalizeActivationMode(activationMode);
-		if (spawnOceanBiome == null) spawnOceanBiome = "";
+		if (spawnGearItems == null) spawnGearItems = "";
 
 		seaLevel = Math.max(32, Math.min(200, seaLevel));
 		guardianSpawnWeight = Math.max(0, guardianSpawnWeight);
@@ -245,7 +242,6 @@ public final class WaterworldConfig {
 		drownedSpawnCharge = Math.max(0.0, drownedSpawnCharge);
 		drownedSpawnEnergyBudget = Math.max(0.0, drownedSpawnEnergyBudget);
 		tridentRiderChance = clamp01(tridentRiderChance);
-		pillagerArmorChance = clamp01(pillagerArmorChance);
 
 		tridentDrownedMinDays = Math.max(0, tridentDrownedMinDays);
 		guardianMinDays = Math.max(0, guardianMinDays);
@@ -260,6 +256,58 @@ public final class WaterworldConfig {
 
 	private static double clamp01(double value) {
 		return Math.max(0.0, Math.min(1.0, value));
+	}
+
+	/**
+	 * Parses {@link #spawnGearItems} into stacks for the spawn raft chest.
+	 * Invalid entries are skipped with a warning.
+	 */
+	public List<ItemStack> createSpawnGearStacks() {
+		sanitize();
+		List<ItemStack> stacks = new ArrayList<>();
+		if (spawnGearItems.isBlank()) return stacks;
+
+		for (String raw : spawnGearItems.split(",")) {
+			String entry = raw.trim();
+			if (entry.isEmpty()) continue;
+
+			int count = 1;
+			String idPart = entry;
+			int lastColon = entry.lastIndexOf(':');
+			int firstColon = entry.indexOf(':');
+			// namespace:path:count — count only when there are at least two colons
+			if (firstColon >= 0 && lastColon > firstColon) {
+				String maybeCount = entry.substring(lastColon + 1).trim();
+				try {
+					count = Integer.parseInt(maybeCount);
+					idPart = entry.substring(0, lastColon).trim();
+				} catch (NumberFormatException ignored) {
+					// Treat whole string as an id (unusual path containing digits after colon)
+				}
+			}
+
+			if (count <= 0) continue;
+
+			Identifier id;
+			try {
+				if (idPart.contains(":")) {
+					id = Identifier.parse(idPart);
+				} else {
+					id = Identifier.fromNamespaceAndPath("minecraft", idPart);
+				}
+			} catch (RuntimeException e) {
+				WaterworldMod.LOGGER.warn("Invalid spawn_gear_items entry '{}', skipping", entry);
+				continue;
+			}
+
+			if (!BuiltInRegistries.ITEM.containsKey(id)) {
+				WaterworldMod.LOGGER.warn("Unknown item '{}' in spawn_gear_items, skipping", id);
+				continue;
+			}
+			Item item = BuiltInRegistries.ITEM.getValue(id);
+			stacks.add(new ItemStack(item, Math.min(count, item.getDefaultMaxStackSize())));
+		}
+		return stacks;
 	}
 
 	public void save(Path configDir) {
@@ -287,18 +335,19 @@ public final class WaterworldConfig {
 
 					# --- Player Spawn ---
 
-					# Force spawn in a specific ocean biome (empty = disabled)
-					# Examples: warm_ocean, lukewarm_ocean, deep_ocean
-					spawn_ocean_biome=%s
-
 					# Generate a small island at world spawn
 					spawn_island=%s
 
 					# Give players a bamboo chest raft with starter items on first spawn
 					spawn_gear=%s
 
+					# Comma-separated item ids for the spawn raft chest; optional :count (default 1).
+					# Example: minecraft:bamboo,minecraft:fishing_rod
+					# Empty = raft with empty chest
+					spawn_gear_items=%s
+
 					# Ocean waterline for ships/biomes (default 101). For new worlds, keep
-					# data/project-waterworld/worldgen/noise_settings/waterworld.json sea_level
+					# data/waterworld/worldgen/noise_settings/waterworld.json sea_level
 					# equal to this value. Existing chunks are not re-flooded.
 					sea_level=%d
 
@@ -353,7 +402,7 @@ public final class WaterworldConfig {
 
 					# --- Turtles ---
 
-					# Turtles spawn naturally in biomes tagged #project-waterworld:turtle_spawns
+					# Turtles spawn naturally in biomes tagged #waterworld:turtle_spawns
 					# Restart required after changing weight
 					turtle_ocean_spawns=%s
 
@@ -370,16 +419,6 @@ public final class WaterworldConfig {
 
 					# Day patrol frequency reaches full rate
 					patrol_full_strength_days=%d
-
-					# Illagers spawn with armor during patrols and raids
-					pillager_armor=%s
-
-					# Base chance per armor piece for illagers (0.0-1.0)
-					pillager_armor_chance=%s
-
-					# Armor chance/tier scales with game difficulty (Easy/Normal/Hard)
-					# and ramps with world age from patrol_min_days to patrol_full_strength_days
-					armor_scales_with_difficulty=%s
 
 					# --- Wandering Traders ---
 
@@ -401,9 +440,9 @@ public final class WaterworldConfig {
 					mobs_can_pilot_boats=%s
 					""".formatted(
 					activationMode,
-					spawnOceanBiome,
 					spawnIsland,
 					spawnGear,
+					spawnGearItems,
 					seaLevel,
 					wildGuardianSpawns,
 					guardianSpawnWeight,
@@ -425,9 +464,6 @@ public final class WaterworldConfig {
 					oceanPillagerPatrols,
 					patrolMinDays,
 					patrolFullStrengthDays,
-					pillagerArmor,
-					formatDouble(pillagerArmorChance),
-					armorScalesWithDifficulty,
 					wanderingTraderBoats,
 					wanderingTraderMinDays,
 					wanderingTraderFullStrengthDays,
@@ -436,7 +472,7 @@ public final class WaterworldConfig {
 
 			Files.writeString(file, content);
 		} catch (IOException e) {
-			ProjectWaterworld.LOGGER.error("Failed to save config", e);
+			WaterworldMod.LOGGER.error("Failed to save config", e);
 		}
 	}
 
@@ -494,13 +530,11 @@ public final class WaterworldConfig {
 		boolean wild_guardian_spawns = true;
 		boolean drowned_ride_guardians = true;
 		boolean drowned_can_go_on_land = true;
-		boolean pillager_armor = true;
 		boolean mobs_can_exit_boats = true;
 		boolean mobs_can_pilot_boats = true;
 		boolean wandering_trader_boats = true;
 		boolean ocean_pillager_patrols = true;
 		boolean turtle_ocean_spawns = true;
-		String spawn_ocean_biome = "";
 		boolean spawn_island = false;
 		boolean spawn_gear = true;
 		int guardian_spawn_weight = 1;
@@ -508,8 +542,6 @@ public final class WaterworldConfig {
 		double guardian_spawn_chance = 0.04;
 		double drowned_rider_chance = 0.12;
 		double trident_rider_chance = 0.20;
-		double pillager_armor_chance = 0.3;
-		boolean armor_scales_with_difficulty = true;
 		int trident_drowned_min_days = 10;
 		int guardian_min_days = 3;
 		int guardian_full_strength_days = 20;

@@ -3,7 +3,7 @@ plugins {
 	id 'maven-publish'
 }
 
-version = "${project.minecraft_version}-${project.mod_version}"
+version = "${project.minecraft_version}-fabric-${project.mod_version}"
 group = project.maven_group
 
 base {
@@ -12,16 +12,16 @@ base {
 
 repositories {
 	maven {
-		name = "Terraformers"
-		url = "https://maven.terraformersmc.com/releases/"
+		name = "Modrinth"
+		url = "https://api.modrinth.com/maven"
 	}
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/project-waterworld.accesswidener")
+	accessWidenerPath = file("src/main/resources/waterworld.accesswidener")
 
 	mods {
-		"project-waterworld" {
+		"waterworld" {
 			sourceSet sourceSets.main
 		}
 	}
@@ -31,7 +31,7 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	compileOnly "com.terraformersmc:modmenu:20.0.0-beta.4"
+	compileOnly "maven.modrinth:modmenu:20.0.1"
 }
 
 processResources {

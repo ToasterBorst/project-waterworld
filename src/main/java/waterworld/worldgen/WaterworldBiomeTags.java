@@ -4,7 +4,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
-import waterworld.ProjectWaterworld;
+import waterworld.WaterworldMod;
 
 /**
  * Datapack biome tags used by Waterworld edge features (spawns, islands).
@@ -19,6 +19,6 @@ public final class WaterworldBiomeTags {
 	}
 
 	private static TagKey<Biome> tag(String path) {
-		return TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath(ProjectWaterworld.MOD_ID, path));
+		return TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath(WaterworldMod.MOD_ID, path));
 	}
 }
