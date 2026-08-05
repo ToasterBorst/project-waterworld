@@ -9,7 +9,6 @@
   "config.waterworld.section.turtles": "Turtles",
   "config.waterworld.section.illagers": "Pillagers & Patrols",
   "config.waterworld.section.traders": "Wandering Traders",
-  "config.waterworld.section.boats": "Boat Behavior",
   "config.waterworld.option.activation_mode": "Activation Mode",
   "config.waterworld.activation.auto": "Auto",
   "config.waterworld.activation.always": "Always",

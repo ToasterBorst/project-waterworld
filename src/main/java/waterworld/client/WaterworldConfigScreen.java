@@ -87,7 +87,7 @@ public class WaterworldConfigScreen extends Screen {
 				"Day guardian spawn chance reaches its full configured value.",
 				v -> config.guardianFullStrengthDays = v);
 		addBoolOption("Drowned Ride Guardians", config.drownedRideGuardians,
-				"Drowned riders appear on wild guardians with a configurable trident chance.",
+				"Baby drowned riders appear on wild guardians (no tridents).",
 				v -> config.drownedRideGuardians = v);
 		addDoubleOption("Drowned Rider Chance", config.drownedRiderChance,
 				"Chance a wild guardian spawns with a drowned rider (0.0-1.0).",
@@ -101,9 +101,6 @@ public class WaterworldConfigScreen extends Screen {
 		addIntOption("Rider Full Strength Days", config.drownedRiderFullStrengthDays,
 				"Day drowned rider chance reaches its full configured value.",
 				v -> config.drownedRiderFullStrengthDays = v);
-		addDoubleOption("Trident Rider Chance", config.tridentRiderChance,
-				"Chance a drowned rider carries a trident (0.0-1.0).",
-				v -> config.tridentRiderChance = v);
 		addIntOption("Trident Drowned Min Days", config.tridentDrownedMinDays,
 				"Days before drowned can spawn with tridents. 0 = immediate.",
 				v -> config.tridentDrownedMinDays = v);
@@ -146,14 +143,6 @@ public class WaterworldConfigScreen extends Screen {
 		addIntOption("Trader Full Strength Days", config.wanderingTraderFullStrengthDays,
 				"Day wandering trader frequency reaches full rate.",
 				v -> config.wanderingTraderFullStrengthDays = v);
-
-		addSectionKey("config.waterworld.section.boats");
-		addBoolOption("Mobs Can Exit Boats", config.mobsCanExitBoats,
-				"Intelligent mobs can exit boats when they reach land.",
-				v -> config.mobsCanExitBoats = v);
-		addBoolOption("Mobs Can Pilot Boats", config.mobsCanPilotBoats,
-				"Illagers and wandering traders can steer boats.",
-				v -> config.mobsCanPilotBoats = v);
 
 		this.addWidget(optionList);
 

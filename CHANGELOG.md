@@ -10,6 +10,9 @@
 - Spawn Party bridge: placement driven by Spawn Party calling `SpawnPartyOriginHook` (no fragile Proxy event register)
 - With Spawn Party loaded: skip world-spawn island; one island per party id; gear per player on first-origin placement
 - Fail-closed JOIN defer when Spawn Party API unbound; never mark gear-received from PLAY_TIME alone while Spawn Party is present
+- Buried treasure biome tag restored to `#minecraft:is_ocean` so chests generate on the ocean floor and treasure maps point at real sites (not beach-only columns)
+- Abandoned mod-spawned raft distance purge runs from `AbstractBoat.tick` (boats never call `Entity.checkDespawn`)
+- Patrol boat pilots prefer patrol targets over nearest player
 
 ### Changed
 - Jar version string includes loader: `waterworld-26.2-fabric-<mod_version>.jar`
@@ -48,8 +51,7 @@
 - Structure biome gates (`isValidBiome` + monument `getBiomesWithin`) sample vanilla overworld climate at Y≈63 so XZ matches seed maps
 - Ruined portals: ocean-floor variant only, but biome gate includes all overworld portal biomes so seed-map land sites become submerged portals
 - Shipwrecks: ocean variant only (beached omitted); vanilla density preserved; bonus lower-density wrecks across all overworld biomes
-
-- Buried treasure uses vanilla beach biomes (chests on ocean floor under beach columns)
+- Buried treasure: `has_structure/buried_treasure` uses `#minecraft:is_ocean` (chests on ocean floor via seabed settle); treasure maps from wrecks/ruins locate real chests
 - Pyramids/temples/trail ruins on seabed; hut boat + outpost ship substitutes; villages/igloos/mansions disabled
 - Monument / portal / wreck spacing kept near vanilla (not the denser pre-freeze numbers)
 - Monument guardians ignore wild guardian day delay / chance

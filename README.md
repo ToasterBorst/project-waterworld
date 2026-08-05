@@ -8,12 +8,12 @@ Fabric. Server-side only for multiplayer — clients do not need the mod. Instal
 ## Features
 
 - **Waterworld** — Endless ocean at configurable sea level, default Y=101. Soft-faded vanilla seabed (~Y23–83), with vanilla features and subterranean biomes below. Surface biomes in the air column (dipping a few blocks into the water for clean tint); ocean biomes below. Biome mods supported.
-- **Boat AI** — Sentient mobs (pillagers, vindicators, evokers, witches, villagers, wandering traders) can pilot and exit boats/rafts. Sentient mobs might also open doors, whoopsie.
+- **Boat AI** — Sentient mobs (pillagers, vindicators, evokers, witches, wandering traders) can pilot and exit boats/rafts (always on when Waterworld is active). Sentient mobs might also open doors, whoopsie.
 - **Wandering trader rafts** — Traders spawn in bamboo rafts with stacked llama passengers.
 - **Ocean pillager patrols** — Pillager patrols spawn in bamboo rafts on the water.
 - **Raid mobs in rafts** — Raiders spawn in bamboo rafts over water, ravagers in back seats with jockeys.
 - **Wild guardians** — Guardians spawn naturally in ocean biomes at low frequency.
-- **Drowned guardian riders** — Wild guardians can spawn with mounted drowned (trident chance).
+- **Drowned guardian riders** — Wild guardians can spawn with mounted baby drowned (no tridents).
 - **Drowned on land** — Drowned will chase/roam onto land.
 - **Sea turtles** — Turtles spawn naturally on warm/lukewarm/deep lukewarm ocean seabed sand.
 - **Treasure maps** — Buried treasure generates on the ocean floor.
@@ -72,12 +72,11 @@ With Spawn Party loaded:
 | `guardian_spawn_chance` | `0.01` | Chance a guardian spawn attempt succeeds (0.0–1.0) |
 | `guardian_min_days` | `5` | Days before wild guardians start spawning |
 | `guardian_full_strength_days` | `20` | Day guardian spawn chance reaches full configured value |
-| `drowned_ride_guardians` | `true` | Drowned riders on wild guardians, with trident chance |
-| `drowned_rider_chance` | `0.85` | Chance a wild guardian spawns with a drowned rider (0.0–1.0) |
+| `drowned_ride_guardians` | `true` | Baby drowned riders on wild guardians (no tridents) |
+| `drowned_rider_chance` | `0.05` | Chance a wild guardian spawns with a drowned rider (0.0–1.0) |
 | `mounted_guardian_speed_factor` | `0.55` | Guardian swim speed while a drowned is riding (0.1–1.0; 1.0 = off). Bare guardians unchanged |
 | `drowned_rider_min_days` | `5` | Days before drowned riders appear on guardians |
 | `drowned_rider_full_strength_days` | `18` | Day drowned rider chance reaches full configured value |
-| `trident_rider_chance` | `0.20` | Chance a drowned rider carries a trident (0.0–1.0) |
 | `trident_drowned_min_days` | `10` | Days before drowned can spawn with tridents (0 = immediate) |
 | `drowned_can_go_on_land` | `true` | Drowned can roam on land instead of returning to water |
 | `drowned_spawn_charge` | `0.15` | Vanilla `spawn_costs` charge for ocean drowned (0 = off; higher = sparser) (**restart**) |
@@ -94,7 +93,7 @@ With Spawn Party loaded:
 
 | Key | Default | Effect |
 |-----|---------|--------|
-| `ocean_pillager_patrols` | `true` | Pillager patrols and raids spawn in boats on water |
+| `ocean_pillager_patrols` | `true` | Pillager patrols and raid waves spawn in boats on water |
 | `patrol_min_days` | `5` | Days before pillager patrols begin |
 | `patrol_full_strength_days` | `24` | Day patrol frequency reaches full strength |
 
@@ -105,13 +104,6 @@ With Spawn Party loaded:
 | `wandering_trader_boats` | `true` | Wandering traders spawn in boats at sea with llamas |
 | `wandering_trader_min_days` | `2` | Days before wandering traders appear |
 | `wandering_trader_full_strength_days` | `12` | Day wandering trader frequency reaches full rate |
-
-### Boat Behavior
-
-| Key | Default | Effect |
-|-----|---------|--------|
-| `mobs_can_exit_boats` | `true` | Intelligent mobs can exit boats when they reach land |
-| `mobs_can_pilot_boats` | `true` | Illagers and wandering traders can steer boats |
 
 ## License
 

@@ -11,7 +11,7 @@ import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jetbrains.annotations.Nullable;
-import waterworld.WaterworldConfig;
+import waterworld.WaterworldAttachments;
 import waterworld.ai.BoatApproachPlayerGoal;
 import waterworld.ai.BoatCombatPilotGoal;
 import waterworld.ai.BoatFleeGoal;
@@ -60,6 +60,7 @@ public final class BoatSpawnHelper {
 		if (boat == null) return null;
 		boat.setPos(x, y + 0.5, z);
 		boat.setYRot(level.getRandom().nextFloat() * 360.0f);
+		WaterworldAttachments.markSpawnBoat(boat);
 		level.addFreshEntity(boat);
 		return boat;
 	}
@@ -70,8 +71,7 @@ public final class BoatSpawnHelper {
 	public static void addBaseBoatGoals(Mob mob) {
 		if (hasBaseBoatGoals(mob)) return;
 
-		WaterworldConfig config = WaterworldConfig.INSTANCE;
-		if (config.mobsCanExitBoats && WaterworldMobTypes.canDismountBoats(mob)) {
+		if (WaterworldMobTypes.canDismountBoats(mob)) {
 			mob.goalSelector.addGoal(1, new DismountBoatGoal(mob));
 		}
 
@@ -85,8 +85,7 @@ public final class BoatSpawnHelper {
 	 * Adds steering goals for boat pilots. Call from spawn sites with the correct role.
 	 */
 	public static void addPilotBoatGoals(Mob mob) {
-		WaterworldConfig config = WaterworldConfig.INSTANCE;
-		if (!config.mobsCanPilotBoats || !WaterworldMobTypes.canPilotBoats(mob)) return;
+		if (!WaterworldMobTypes.canPilotBoats(mob)) return;
 		if (hasPilotBoatGoals(mob)) return;
 
 		if (WaterworldMobTypes.isHostileBoatPilot(mob)) {
@@ -96,8 +95,6 @@ public final class BoatSpawnHelper {
 			mob.goalSelector.addGoal(0, new BoatFleeGoal(mob));
 			mob.goalSelector.addGoal(1, new BoatApproachPlayerGoal(mob));
 			mob.goalSelector.addGoal(2, new PilotBoatGoal(mob));
-		} else {
-			mob.goalSelector.addGoal(0, new PilotBoatGoal(mob));
 		}
 	}
 
@@ -125,7 +122,11 @@ public final class BoatSpawnHelper {
 
 	private static boolean hasPilotBoatGoals(Mob mob) {
 		for (WrappedGoal wg : mob.goalSelector.getAvailableGoals()) {
-			if (wg.getGoal() instanceof PilotBoatGoal) {
+			var goal = wg.getGoal();
+			if (goal instanceof PilotBoatGoal
+					|| goal instanceof BoatApproachPlayerGoal
+					|| goal instanceof BoatFleeGoal
+					|| goal instanceof BoatCombatPilotGoal) {
 				return true;
 			}
 		}

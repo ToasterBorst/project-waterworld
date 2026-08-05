@@ -16,6 +16,7 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.pathfinder.PathType;
 import waterworld.WaterworldMod;
 import waterworld.WaterworldConfig;
@@ -103,8 +104,12 @@ public final class WaterworldSpawns {
 		if (!WaterworldMobTypes.canDismountBoats(mob) && !WaterworldMobTypes.canPilotBoats(mob)) {
 			return;
 		}
-		// Base goals only; spawn sites add pilot goals with the correct role.
 		BoatSpawnHelper.addBaseBoatGoals(mob);
+		// Goals are not saved in NBT — restore pilot suite when still driving a boat.
+		if (mob.getVehicle() instanceof AbstractBoat boat
+				&& boat.getControllingPassenger() == mob) {
+			BoatSpawnHelper.addPilotBoatGoals(mob);
+		}
 	}
 
 	private static void injectDoorGoals(Mob mob) {

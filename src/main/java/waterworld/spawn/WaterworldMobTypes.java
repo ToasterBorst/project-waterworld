@@ -7,7 +7,6 @@ import net.minecraft.world.entity.monster.illager.Evoker;
 import net.minecraft.world.entity.monster.illager.Illusioner;
 import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.monster.illager.Vindicator;
-import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 
 /**
@@ -20,14 +19,12 @@ public final class WaterworldMobTypes {
 	public static boolean canDismountBoats(Mob mob) {
 		return isHostileBoatPilot(mob)
 				|| mob instanceof Ravager
-				|| mob instanceof WanderingTrader
-				|| mob instanceof Villager;
+				|| mob instanceof WanderingTrader;
 	}
 
 	public static boolean canPilotBoats(Mob mob) {
 		return isHostileBoatPilot(mob)
-				|| mob instanceof WanderingTrader
-				|| mob instanceof Villager;
+				|| mob instanceof WanderingTrader;
 	}
 
 	public static boolean isHostileBoatPilot(Mob mob) {

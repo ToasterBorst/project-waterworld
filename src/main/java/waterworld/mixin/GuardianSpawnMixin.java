@@ -1,22 +1,19 @@
 package waterworld.mixin;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
-import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldDetection;
+import waterworld.spawn.OceanMonumentChecks;
 
 /**
  * Allows rare wild guardians in open ocean, with a day-based ramp.
@@ -37,7 +34,7 @@ public class GuardianSpawnMixin {
 		if (spawnReason != EntitySpawnReason.NATURAL) return;
 
 		// Inside a monument: do not override — vanilla monument spawn rules apply.
-		if (level instanceof ServerLevel serverLevel && isInOceanMonument(serverLevel, pos)) {
+		if (level instanceof ServerLevel serverLevel && OceanMonumentChecks.isInOceanMonument(serverLevel, pos)) {
 			return;
 		}
 
@@ -64,15 +61,5 @@ public class GuardianSpawnMixin {
 				cir.setReturnValue(false);
 			}
 		}
-	}
-
-	private static boolean isInOceanMonument(ServerLevel level, BlockPos pos) {
-		Structure monument = level.registryAccess()
-				.lookupOrThrow(Registries.STRUCTURE)
-				.getValue(BuiltinStructures.OCEAN_MONUMENT);
-		if (monument == null) return false;
-
-		StructureStart start = level.structureManager().getStructureWithPieceAt(pos, monument);
-		return start.isValid();
 	}
 }

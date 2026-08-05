@@ -5,12 +5,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 
 import java.util.EnumSet;
 
@@ -75,18 +73,11 @@ public class DismountBoatGoal extends Goal {
 	/**
 	 * Stay in the boat if the mob's target is NOT standing on solid ground
 	 * (i.e. the target is in water, on a boat, or airborne -- unreachable
-	 * on foot). Also stay if a wandering trader has waterborne threats.
+	 * on foot).
 	 */
 	private boolean hasReasonToStayInBoat() {
 		LivingEntity target = mob.getTarget();
-		if (target != null && target.isAlive() && !target.onGround()) return true;
-
-		if (mob instanceof WanderingTrader) {
-			AABB threatBox = mob.getBoundingBox().inflate(16.0);
-			return !mob.level().getEntitiesOfClass(Monster.class, threatBox,
-					m -> m.isAlive() && m.getTarget() == mob && !m.onGround()).isEmpty();
-		}
-		return false;
+		return target != null && target.isAlive() && !target.onGround();
 	}
 
 	private boolean hasNearbyLand(AbstractBoat boat) {

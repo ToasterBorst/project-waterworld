@@ -27,8 +27,6 @@ public final class WaterworldConfig {
 	public boolean wildGuardianSpawns = true;
 	public boolean drownedRideGuardians = true;
 	public boolean drownedCanGoOnLand = true;
-	public boolean mobsCanExitBoats = true;
-	public boolean mobsCanPilotBoats = true;
 	public boolean wanderingTraderBoats = true;
 	public boolean oceanPillagerPatrols = true;
 	public boolean turtleOceanSpawns = true;
@@ -47,8 +45,8 @@ public final class WaterworldConfig {
 	public int guardianSpawnWeight = 1;
 	public int turtleSpawnWeight = 5;
 	public double guardianSpawnChance = 0.01;
-	/** Wild guardians usually arrive "wrangled" away from monuments by a drowned rider. */
-	public double drownedRiderChance = 0.85;
+	/** Chance a wild guardian (outside monuments) spawns with a baby drowned rider. */
+	public double drownedRiderChance = 0.05;
 	/**
 	 * Multiplies guardian {@code MOVEMENT_SPEED} while a drowned is riding
 	 * ({@code 1.0} = off). Default {@code 0.55} ≈ 0.275 effective speed so boats can escape.
@@ -62,8 +60,6 @@ public final class WaterworldConfig {
 	public double drownedSpawnCharge = 0.15;
 	/** Energy budget paired with {@link #drownedSpawnCharge} (vanilla spawn_costs). */
 	public double drownedSpawnEnergyBudget = 0.7;
-	public double tridentRiderChance = 0.20;
-
 	public int tridentDrownedMinDays = 10;
 	public int guardianMinDays = 5;
 	public int guardianFullStrengthDays = 20;
@@ -156,8 +152,6 @@ public final class WaterworldConfig {
 			config.wildGuardianSpawns = legacy.wild_guardian_spawns;
 			config.drownedRideGuardians = legacy.drowned_ride_guardians;
 			config.drownedCanGoOnLand = legacy.drowned_can_go_on_land;
-			config.mobsCanExitBoats = legacy.mobs_can_exit_boats;
-			config.mobsCanPilotBoats = legacy.mobs_can_pilot_boats;
 			config.wanderingTraderBoats = legacy.wandering_trader_boats;
 			config.oceanPillagerPatrols = legacy.ocean_pillager_patrols;
 			config.turtleOceanSpawns = legacy.turtle_ocean_spawns;
@@ -167,7 +161,6 @@ public final class WaterworldConfig {
 			config.turtleSpawnWeight = legacy.turtle_spawn_weight;
 			config.guardianSpawnChance = legacy.guardian_spawn_chance;
 			config.drownedRiderChance = legacy.drowned_rider_chance;
-			config.tridentRiderChance = legacy.trident_rider_chance;
 			config.tridentDrownedMinDays = legacy.trident_drowned_min_days;
 			config.guardianMinDays = legacy.guardian_min_days;
 			config.guardianFullStrengthDays = legacy.guardian_full_strength_days;
@@ -190,8 +183,6 @@ public final class WaterworldConfig {
 		wildGuardianSpawns = getBool(props, "wild_guardian_spawns", wildGuardianSpawns);
 		drownedRideGuardians = getBool(props, "drowned_ride_guardians", drownedRideGuardians);
 		drownedCanGoOnLand = getBool(props, "drowned_can_go_on_land", drownedCanGoOnLand);
-		mobsCanExitBoats = getBool(props, "mobs_can_exit_boats", mobsCanExitBoats);
-		mobsCanPilotBoats = getBool(props, "mobs_can_pilot_boats", mobsCanPilotBoats);
 		wanderingTraderBoats = getBool(props, "wandering_trader_boats", wanderingTraderBoats);
 		oceanPillagerPatrols = getBool(props, "ocean_pillager_patrols", oceanPillagerPatrols);
 		turtleOceanSpawns = getBool(props, "turtle_ocean_spawns", turtleOceanSpawns);
@@ -214,8 +205,6 @@ public final class WaterworldConfig {
 			drownedSpawnCharge = 0.15;
 			drownedSpawnEnergyBudget = 0.7;
 		}
-		tridentRiderChance = getDouble(props, "trident_rider_chance", tridentRiderChance);
-
 		tridentDrownedMinDays = getInt(props, "trident_drowned_min_days", tridentDrownedMinDays);
 		guardianMinDays = getInt(props, "guardian_min_days", guardianMinDays);
 		guardianFullStrengthDays = getInt(props, "guardian_full_strength_days", guardianFullStrengthDays);
@@ -241,7 +230,6 @@ public final class WaterworldConfig {
 		mountedGuardianSpeedFactor = Math.max(0.1, Math.min(1.0, mountedGuardianSpeedFactor));
 		drownedSpawnCharge = Math.max(0.0, drownedSpawnCharge);
 		drownedSpawnEnergyBudget = Math.max(0.0, drownedSpawnEnergyBudget);
-		tridentRiderChance = clamp01(tridentRiderChance);
 
 		tridentDrownedMinDays = Math.max(0, tridentDrownedMinDays);
 		guardianMinDays = Math.max(0, guardianMinDays);
@@ -369,10 +357,10 @@ public final class WaterworldConfig {
 					# Day guardian spawn chance reaches full configured value
 					guardian_full_strength_days=%d
 
-					# Drowned riders on wild guardians, with trident chance
+					# Drowned riders on wild guardians (baby drowned; no tridents)
 					drowned_ride_guardians=%s
 
-					# Chance a wild guardian spawns with a drowned rider (0.0-1.0)
+					# Chance a wild guardian (outside monuments) spawns with a drowned rider (0.0-1.0)
 					drowned_rider_chance=%s
 
 					# Multiplies guardian swim speed while a drowned is riding (0.1-1.0; 1.0 = off).
@@ -384,9 +372,6 @@ public final class WaterworldConfig {
 
 					# Day drowned rider chance reaches full configured value
 					drowned_rider_full_strength_days=%d
-
-					# Chance a drowned rider carries a trident (0.0-1.0)
-					trident_rider_chance=%s
 
 					# Days before drowned can spawn with tridents (0 = immediate)
 					trident_drowned_min_days=%d
@@ -430,14 +415,6 @@ public final class WaterworldConfig {
 
 					# Day wandering trader frequency reaches full rate
 					wandering_trader_full_strength_days=%d
-
-					# --- Boat Behavior ---
-
-					# Intelligent mobs can exit boats when they reach land
-					mobs_can_exit_boats=%s
-
-					# Illagers and wandering traders can steer boats
-					mobs_can_pilot_boats=%s
 					""".formatted(
 					activationMode,
 					spawnIsland,
@@ -454,7 +431,6 @@ public final class WaterworldConfig {
 					formatDouble(mountedGuardianSpeedFactor),
 					drownedRiderMinDays,
 					drownedRiderFullStrengthDays,
-					formatDouble(tridentRiderChance),
 					tridentDrownedMinDays,
 					drownedCanGoOnLand,
 					formatDouble(drownedSpawnCharge),
@@ -466,9 +442,7 @@ public final class WaterworldConfig {
 					patrolFullStrengthDays,
 					wanderingTraderBoats,
 					wanderingTraderMinDays,
-					wanderingTraderFullStrengthDays,
-					mobsCanExitBoats,
-					mobsCanPilotBoats);
+					wanderingTraderFullStrengthDays);
 
 			Files.writeString(file, content);
 		} catch (IOException e) {
@@ -530,8 +504,6 @@ public final class WaterworldConfig {
 		boolean wild_guardian_spawns = true;
 		boolean drowned_ride_guardians = true;
 		boolean drowned_can_go_on_land = true;
-		boolean mobs_can_exit_boats = true;
-		boolean mobs_can_pilot_boats = true;
 		boolean wandering_trader_boats = true;
 		boolean ocean_pillager_patrols = true;
 		boolean turtle_ocean_spawns = true;
@@ -541,7 +513,6 @@ public final class WaterworldConfig {
 		int turtle_spawn_weight = 5;
 		double guardian_spawn_chance = 0.04;
 		double drowned_rider_chance = 0.12;
-		double trident_rider_chance = 0.20;
 		int trident_drowned_min_days = 10;
 		int guardian_min_days = 3;
 		int guardian_full_strength_days = 20;

@@ -31,6 +31,8 @@ public class WaterworldMod implements ModInitializer {
 		WaterworldBiomeSources.register();
 		WaterworldStructures.register();
 		WaterworldSpawns.register();
+		// Force attachment type registration at mod init.
+		waterworld.WaterworldAttachments.SPAWN_BOAT.getClass();
 		waterworld.compat.SpawnPartyBridge.register();
 
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {

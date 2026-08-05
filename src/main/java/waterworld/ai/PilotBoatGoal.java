@@ -15,9 +15,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.EnumSet;
 
 /**
- * Steers a boat toward meaningful destinations. Tries targets in
- * priority order: nearest player, raid center, patrol target, nearest
- * land, then random wander as a last resort.
+ * Steers a boat toward meaningful destinations. Priority: patrol target (when
+ * patrolling), raid center, nearest player, nearest land, then random wander.
  */
 public class PilotBoatGoal extends Goal {
 	private static final double WAYPOINT_REACH_DIST = 4.0;
@@ -104,13 +103,16 @@ public class PilotBoatGoal extends Goal {
 	private Vec3 pickSmartTarget() {
 		Vec3 result;
 
-		result = findNearestPlayer();
-		if (result != null) return result;
+		// Patrolling illagers follow their patrol route; don't yank them to the player.
+		if (mob instanceof PatrollingMonster) {
+			result = findPatrolTarget();
+			if (result != null) return result;
+		}
 
 		result = findRaidCenter();
 		if (result != null) return result;
 
-		result = findPatrolTarget();
+		result = findNearestPlayer();
 		if (result != null) return result;
 
 		result = findNearestLand();

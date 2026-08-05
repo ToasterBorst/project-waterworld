@@ -4,13 +4,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.monster.zombie.Drowned;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,11 +15,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import waterworld.WaterworldConfig;
 import waterworld.WaterworldDetection;
+import waterworld.spawn.OceanMonumentChecks;
 
 /**
- * Attaches drowned riders to naturally spawned guardians.
- * Rider chance and trident chance scale with world age (day-based difficulty ramp).
- * Targets Mob.finalizeSpawn since Guardian doesn't override it.
+ * Attaches baby drowned riders to naturally spawned guardians (no tridents).
+ * Rider chance scales with world age (day-based difficulty ramp).
+ *
+ * <p>Must target {@link Mob}: Guardian does not override {@code finalizeSpawn},
+ * and Mixin cannot inject inherited methods via a subclass (same as boats /
+ * {@code checkDespawn}).
  */
 @Mixin(Mob.class)
 public class DrownedRiderMixin {
@@ -36,6 +37,7 @@ public class DrownedRiderMixin {
 		if (!WaterworldDetection.isActive()) return;
 		if (spawnReason != EntitySpawnReason.NATURAL) return;
 		if (!(levelAccessor.getLevel() instanceof ServerLevel level)) return;
+		if (OceanMonumentChecks.isInOceanMonument(level, guardian.blockPosition())) return;
 
 		WaterworldConfig config = WaterworldConfig.INSTANCE;
 
@@ -50,13 +52,7 @@ public class DrownedRiderMixin {
 		if (drowned == null) return;
 
 		drowned.snapTo(guardian.getX(), guardian.getY(), guardian.getZ(), guardian.getYRot(), 0.0f);
-
-		int minDays = config.tridentDrownedMinDays;
-		boolean worldOldEnough = minDays <= 0 || level.getGameTime() >= 24000L * minDays;
-		if (worldOldEnough && level.getRandom().nextDouble() < config.tridentRiderChance) {
-			drowned.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.TRIDENT));
-			drowned.setDropChance(EquipmentSlot.MAINHAND, 0.08f);
-		}
+		drowned.setBaby(true);
 
 		level.addFreshEntity(drowned);
 		drowned.startRiding(guardian);
